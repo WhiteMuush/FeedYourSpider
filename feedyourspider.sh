@@ -12,14 +12,14 @@ readonly RED="$(tput setaf 1)"
 readonly GREEN="$(tput setaf 2)"
 readonly BLUE="$(tput setaf 4)"
 readonly MAGENTA="$(tput setaf 5)"
-readonly CYAN="$(tput setaf 6)"
+readonly RED="$(tput setaf 6)"
 
 # Bright colors
 readonly BRIGHT_RED="$(tput setaf 9)"
 readonly BRIGHT_GREEN="$(tput setaf 10)"
 readonly BRIGHT_BLUE="$(tput setaf 12)"
 readonly BRIGHT_MAGENTA="$(tput setaf 13)"
-readonly BRIGHT_CYAN="$(tput setaf 14)"
+readonly BRIGHT_RED="$(tput setaf 14)"
 
 # ============================================================================
 # ASCII ART BANNER
@@ -175,41 +175,6 @@ display_banner_with_menu() {
     echo ""
 }
 
-# Display ASCII art with info panel side-by-side
-display_banner() {
-    local -a ascii_lines info_lines
-    
-    IFS=$'\n' read -r -d '' -a ascii_lines <<< "$ASCII_ART" || true
-    info_lines=("${INFO_PANEL[@]}")
-    
-    local ascii_count=${#ascii_lines[@]}
-    local info_count=${#info_lines[@]}
-    local max_lines=$((ascii_count > info_count ? ascii_count : info_count))
-    
-    local max_ascii_width=0
-    for line in "${ascii_lines[@]}"; do
-        ((${#line} > max_ascii_width)) && max_ascii_width=${#line}
-    done
-    
-    local spacing="    "
-    
-    for ((i=0; i<max_lines; i++)); do
-        local ascii_line="${ascii_lines[i]:-}"
-        local info_line="${info_lines[i]:-}"
-        
-        local colored_ascii="${BRIGHT_MAGENTA}${ascii_line}${RESET}"
-        local pad=$((max_ascii_width - ${#ascii_line}))
-        ((pad < 0)) && pad=0
-        
-        printf "   %b%*s%s%b\n" \
-            "$colored_ascii" \
-            "$pad" "" \
-            "$spacing" \
-            "$info_line"
-    done
-    
-    echo ""
-}
 
 # ============================================================================
 # MENU HANDLER
@@ -219,8 +184,38 @@ handle_menu_choice() {
     
     case $choice in
         1)
-            echo -e "\n${BRIGHT_MAGENTA}Launching System Scan...${RESET}"
-            # TODO: Implement system scan
+            # Confirm before launching
+            read -r -p $'\nAre you sure to launch the system scan ? [yes/no]: ' confirm
+            case "${confirm,,}" in
+            y|yes)
+                sleep 1
+                local script_dir target rc
+                script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+                target="$script_dir/tools/systemScan.sh"
+                if [[ -f "$target" ]]; then
+                if [[ -x "$target" ]]; then
+                    echo -e "${DIM}Running ${target}...${RESET}"
+                    "$target"
+                    rc=$?
+                else
+                    echo -e "${DIM}${target} is not executable, running with bash...${RESET}"
+                    bash "$target"
+                    rc=$?
+                fi
+
+                if (( rc == 0 )); then
+                    echo -e "${BRIGHT_MAGENTA}systemScan completed successfully (exit ${rc}).${RESET}"
+                else
+                    echo -e "${BRIGHT_RED}systemScan failed with exit code ${rc}.${RESET}"
+                fi
+                else
+                echo -e "${BRIGHT_RED}systemScan script not found at: ${target}${RESET}"
+                fi
+                ;;
+            *)
+                echo -e "\n${BRIGHT_RED}System scan canceled by user.${RESET}"
+                ;;
+            esac
             ;;
         2)
             echo -e "\n${BRIGHT_MAGENTA}Launching Network Discovery...${RESET}"
@@ -279,7 +274,7 @@ main_loop() {
     while true; do
         clear
         display_banner_with_menu
-        echo -ne "${BOLD}${BRIGHT_RED}FEED YOUR SPIDER: ${RESET}"
+        echo -ne "🕸️    ${BOLD}${BRIGHT_RED}FEED YOUR SPIDER: ${RESET}"
         read -r choice
         
         handle_menu_choice "$choice"
