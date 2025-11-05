@@ -10,7 +10,6 @@ readonly DIM="$(tput dim)"
 # Standard colors
 readonly RED="$(tput setaf 1)"
 readonly GREEN="$(tput setaf 2)"
-readonly YELLOW="$(tput setaf 3)"
 readonly BLUE="$(tput setaf 4)"
 readonly MAGENTA="$(tput setaf 5)"
 readonly CYAN="$(tput setaf 6)"
@@ -18,7 +17,6 @@ readonly CYAN="$(tput setaf 6)"
 # Bright colors
 readonly BRIGHT_RED="$(tput setaf 9)"
 readonly BRIGHT_GREEN="$(tput setaf 10)"
-readonly BRIGHT_YELLOW="$(tput setaf 11)"
 readonly BRIGHT_BLUE="$(tput setaf 12)"
 readonly BRIGHT_MAGENTA="$(tput setaf 13)"
 readonly BRIGHT_CYAN="$(tput setaf 14)"
@@ -221,47 +219,47 @@ handle_menu_choice() {
     
     case $choice in
         1)
-            echo -e "\n${BRIGHT_YELLOW}🔍 Launching System Scan...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching System Scan...${RESET}"
             # TODO: Implement system scan
             ;;
         2)
-            echo -e "\n${BRIGHT_YELLOW}🌐 Launching Network Discovery...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching Network Discovery...${RESET}"
             # TODO: Implement network discovery
             ;;
         3)
-            echo -e "\n${BRIGHT_YELLOW}📊 Launching Performance Analysis...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching Performance Analysis...${RESET}"
             # TODO: Implement performance analysis
             ;;
         4)
-            echo -e "\n${BRIGHT_YELLOW}🔐 Launching Security Audit...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching Security Audit...${RESET}"
             # TODO: Implement security audit
             ;;
         5)
-            echo -e "\n${BRIGHT_YELLOW}📝 Launching Log Analysis...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching Log Analysis...${RESET}"
             # TODO: Implement log analysis
             ;;
         6)
-            echo -e "\n${BRIGHT_YELLOW}🕸️  Launching Full Spider Scan...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Launching Full Spider Scan...${RESET}"
             # TODO: Implement full scan
             ;;
         7)
-            echo -e "\n${BRIGHT_YELLOW}📈 Displaying Collected Data...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Displaying Collected Data...${RESET}"
             # TODO: Implement data viewer
             ;;
         8)
-            echo -e "\n${BRIGHT_YELLOW}⚙️  Installing Dependencies...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Installing Dependencies...${RESET}"
             # TODO: Implement dependency installer
             ;;
         9)
-            echo -e "\n${BRIGHT_YELLOW}🧹 Cleaning Data...${RESET}"
+            echo -e "\n${BRIGHT_MAGENTA}Cleaning Data...${RESET}"
             # TODO: Implement data cleanup
             ;;
         0)
-            echo -e "\n${BRIGHT_GREEN}👋 Spider is going to sleep... Goodbye!${RESET}\n"
+            echo -e "\n${BRIGHT_GREEN}Spider is going to sleep... Goodbye!${RESET}\n"
             exit 0
             ;;
         *)
-            echo -e "\n${BRIGHT_RED}❌ Invalid choice. Please try again.${RESET}"
+            echo -e "\n${BRIGHT_RED}Invalid choice. Please try again.${RESET}"
             ;;
     esac
     
@@ -281,8 +279,7 @@ main_loop() {
     while true; do
         clear
         display_banner_with_menu
-        
-        echo -ne "${BOLD}${BRIGHT_CYAN}Choose an option: ${RESET}"
+        echo -ne "${BOLD}${BRIGHT_RED}FEED YOUR SPIDER: ${RESET}"
         read -r choice
         
         handle_menu_choice "$choice"
