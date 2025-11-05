@@ -29,9 +29,9 @@ readonly BRIGHT_CYAN="$(tput setaf 14)"
 generate_info() {
     local -a menu_lines=(
         ""
-        "${BOLD}${BRIGHT_RED}____ ____ ____ ___     _   _ ____ _  _ ____    ____ ___  _ ___  ____ ____ ${RESET}"
-        "${BOLD}${BRIGHT_RED}|___ |___ |___ |  \\     \\_/  |  | |  | |__/    [__  |__] | |  \\ |___ |__/ ${RESET}"
-        "${BOLD}${BRIGHT_RED}|    |___ |___ |__/      |   |__| |__| |  \\    ___] |    | |__/ |___ |  \\ ${RESET}"
+        "${BOLD}${BRIGHT_RED}   ____ ____ ____ ___     _   _ ____ _  _ ____    ____ ___  _ ___  ____ ____ ${RESET}"
+        "${BOLD}${BRIGHT_RED}   |___ |___ |___ |  \\     \\_/  |  | |  | |__/    [__  |__] | |  \\ |___ |__/ ${RESET}"
+        "${BOLD}${BRIGHT_RED}   |    |___ |___ |__/      |   |__| |__| |  \\    ___] |    | |__/ |___ |  \\ ${RESET}"
         "${BOLD}${BRIGHT_RED}                                                                          ${RESET}"
         ""
     )
@@ -236,159 +236,8 @@ EOF
         "$interfaces" "$active_connections" "$health_score" "$warnings" "$top_procs"
 }
 
-display_system_report() {
-    local scan_id=$1 hostname=$2 os_info=$3 kernel=$4 uptime=$5 boot_time=$6
-    local load_avg=$7 cpu_usage=$8 cpu_cores=$9 ram_total=${10} ram_used=${11} ram_free=${12} ram_percent=${13}
-    local swap_total=${14} swap_used=${15} swap_percent=${16}
-    local disk_total=${17} disk_used=${18} disk_free=${19} disk_percent=${20}
-    local interfaces=${21} active_connections=${22} health_score=${23} warnings=${24}
-    local top_procs=${25}
-    
-    echo -e "\n${BOLD}${BRIGHT_MAGENTA}═══════════════════════════════════════════════════════════════${RESET}"
-    echo -e "${BOLD}${BRIGHT_MAGENTA}                    SYSTEM SCAN REPORT #${scan_id}${RESET}"
-    echo -e "${BOLD}${BRIGHT_MAGENTA}═══════════════════════════════════════════════════════════════${RESET}\n"
-    
-    # Health Score
-    local score_color=$BRIGHT_RED
-    local score_status="CRITICAL"
-    if [[ $health_score -ge 80 ]]; then
-        score_color=$BRIGHT_GREEN
-        score_status="HEALTHY"
-    elif [[ $health_score -ge 60 ]]; then
-        score_color=$BRIGHT_YELLOW
-        score_status="WARNING"
-    elif [[ $health_score -ge 40 ]]; then
-        score_color=$YELLOW
-        score_status="DEGRADED"
-    fi
-    
-    echo -e "${BOLD}HEALTH SCORE:${RESET} ${score_color}${BOLD}${health_score}/100${RESET} ${score_color}[${score_status}]${RESET}"
-    draw_bar "$health_score" 100 50 "$score_color"
-    echo ""
-    
-    # Warnings
-    if [[ -n "$warnings" ]]; then
-        echo -e "${BOLD}${BRIGHT_RED}WARNINGS:${RESET}"
-        IFS='|' read -ra WARN_ARRAY <<< "$warnings"
-        for warn in "${WARN_ARRAY[@]}"; do
-            [[ -n "$warn" ]] && echo -e "   ${BRIGHT_RED}•${RESET} $warn"
-        done
-        echo ""
-    fi
-    
-    # Real-time live view
-    echo -e "${BOLD}${BRIGHT_RED}REAL-TIME SYSTEM MONITOR${RESET} ${DIM}(press 'q' to quit)${RESET}"
-    # hide cursor
-    tput civis 2>/dev/null || true
-
-    local stop=0
-    trap 'stop=1' SIGINT SIGTERM
-
-    while [[ $stop -eq 0 ]]; do
-        # Gather live metrics
-        local uptime_live=$(uptime -p 2>/dev/null)
-        local load_avg_live=$(uptime | awk -F'load average:' '{print $2}' | xargs)
-        local cpu_usage_live=$(top -bn1 | awk -F'id,' -v OFS='' 'NR==1{ sub(/.*, /,"",$1); getline; } { if ($0 ~ /Cpu/){gsub("%","",$0); split($0,a,","); for(i in a){ if (a[i] ~ /ni|us|sy/){} } } } END{ cmd="top -bn1 | grep Cpu"; cmd | getline; close(cmd) }' 2>/dev/null)
-        # fallback cpu parse
-        cpu_usage_live=$(top -bn1 | grep "Cpu(s)" | awk '{usage=100-$8; if (usage=="") usage=0; printf "%.1f", usage}')
-        local cpu_cores_live=$(nproc 2>/dev/null || echo "$cpu_cores")
-
-        local ram_total_live=$(free -m | awk 'NR==2{print $2}')
-        local ram_used_live=$(free -m | awk 'NR==2{print $3}')
-        local ram_free_live=$(free -m | awk 'NR==2{print $4}')
-        local ram_percent_live=$(awk "BEGIN{ if($ram_total_live>0) printf \"%.1f\", ($ram_used_live/$ram_total_live)*100; else print 0 }")
-
-        local swap_total_live=$(free -m | awk 'NR==3{print $2}')
-        local swap_used_live=$(free -m | awk 'NR==3{print $3}')
-        local swap_percent_live=0
-        if [[ $swap_total_live -gt 0 ]]; then
-            swap_percent_live=$(awk "BEGIN{printf \"%.1f\", ($swap_used_live/$swap_total_live)*100}")
-        fi
-
-        local disk_data_live=$(df -h / | awk 'NR==2{print $2","$3","$4","$5}')
-        IFS=',' read -r disk_total_live disk_used_live disk_free_live disk_percent_live <<< "$disk_data_live"
-        disk_percent_live=${disk_percent_live%\%}
-
-        local interfaces_live=$(ip -br addr 2>/dev/null | awk '{print $1}' | tr '\n' ',' | sed 's/,$//')
-        local active_connections_live=$(ss -tun 2>/dev/null | wc -l)
-        local top_procs_live=$(ps aux --sort=-%cpu | head -11 | tail -10)
-
-        # Render
-        clear
-        echo -e "${BOLD}${BRIGHT_RED}REAL-TIME SYSTEM MONITOR${RESET} ${DIM}(press 'q' to quit)${RESET}"
-        echo ""
-
-        echo -e "${BOLD}${BRIGHT_RED}SYSTEM INFORMATION${RESET}"
-        echo -e "   ${DIM}Hostname:${RESET}     $hostname"
-        echo -e "   ${DIM}OS:${RESET}           $os_info"
-        echo -e "   ${DIM}Kernel:${RESET}       $kernel"
-        echo -e "   ${DIM}Uptime:${RESET}       $uptime_live"
-        echo -e "   ${DIM}Load Avg:${RESET}     $load_avg_live"
-        echo ""
-
-        echo -e "${BOLD}${BRIGHT_RED}CPU${RESET}"
-        echo -e "   ${DIM}Cores:${RESET}        $cpu_cores_live"
-        echo -e "   ${DIM}Usage:${RESET}        ${cpu_usage_live}%"
-        draw_bar "$cpu_usage_live" 100 30 "$BRIGHT_BLUE"
-        echo ""
-
-        echo -e "${BOLD}${BRIGHT_RED}MEMORY${RESET}"
-        echo -e "   ${DIM}Total:${RESET}        ${ram_total_live}MB"
-        echo -e "   ${DIM}Used:${RESET}         ${ram_used_live}MB (${ram_percent_live}%)"
-        echo -e "   ${DIM}Free:${RESET}         ${ram_free_live}MB"
-        draw_bar "$ram_percent_live" 100 30 "$BRIGHT_GREEN"
-        echo ""
-
-        if [[ $swap_total_live -gt 0 ]]; then
-            echo -e "${BOLD}${BRIGHT_RED}SWAP${RESET}"
-            echo -e "   ${DIM}Total:${RESET}        ${swap_total_live}MB"
-            echo -e "   ${DIM}Used:${RESET}         ${swap_used_live}MB (${swap_percent_live}%)"
-            draw_bar "$swap_percent_live" 100 30 "$YELLOW"
-            echo ""
-        fi
-
-        echo -e "${BOLD}${BRIGHT_RED}DISK (/)${RESET}"
-        echo -e "   ${DIM}Total:${RESET}        $disk_total_live"
-        echo -e "   ${DIM}Used:${RESET}         $disk_used_live (${disk_percent_live}%)"
-        echo -e "   ${DIM}Free:${RESET}         $disk_free_live"
-        draw_bar "$disk_percent_live" 100 30 "$MAGENTA"
-        echo ""
-
-        echo -e "${BOLD}${BRIGHT_RED}NETWORK${RESET}"
-        echo -e "   ${DIM}Interfaces:${RESET}   $interfaces_live"
-        echo -e "   ${DIM}Connections:${RESET}  $active_connections_live"
-        echo ""
-
-        echo -e "${BOLD}${BRIGHT_RED}TOP 10 PROCESSES (by CPU)${RESET}"
-        echo -e "   ${DIM}PID       USER          %CPU   %MEM   COMMAND${RESET}"
-        while IFS= read -r line; do
-            local pid=$(echo "$line" | awk '{print $2}')
-            local user=$(echo "$line" | awk '{print $1}')
-            local cpu=$(echo "$line" | awk '{print $3}')
-            local mem=$(echo "$line" | awk '{print $4}')
-            local cmd=$(echo "$line" | awk '{for(i=11;i<=NF;i++) printf $i" "; print ""}' | cut -c1-40)
-            printf "   %-9s %-13s %5s  %5s  %s\n" "$pid" "$user" "$cpu" "$mem" "$cmd"
-        done <<< "$top_procs_live"
-
-        echo ""
-        echo -e "${DIM}Press 'q' to exit live view...${RESET}"
-
-        # wait for key or timeout (2s)
-        read -t 2 -n 1 key 2>/dev/null || key=""
-        if [[ $key == "q" || $key == "Q" ]]; then
-            break
-        fi
-    done
-
-    # restore cursor
-    tput cnorm 2>/dev/null || true
-
-    echo -e "\n${BOLD}${BRIGHT_MAGENTA}═══════════════════════════════════════════════════════════════${RESET}"
-    echo -e "Scan stored in database with ID: ${DIM}$scan_id${RESET}"
-    echo -e "Database location: ${DIM}$SPIDER_DB${RESET}"
-}
-
-draw_bar() {
+# Inline bar drawing (no newline)
+draw_bar_inline() {
     local value=$1
     local max=$2
     local width=$3
@@ -397,26 +246,214 @@ draw_bar() {
     local filled=$(awk "BEGIN {printf \"%.0f\", ($value/$max)*$width}")
     local empty=$((width - filled))
     
-    echo -n "   ["
+    printf "["
     for ((i=0; i<filled; i++)); do
-        echo -ne "${color}█${RESET}"
+        printf "${color}█${RESET}"
     done
     for ((i=0; i<empty; i++)); do
-        echo -ne "${DIM}░${RESET}"
+        printf "${DIM}░${RESET}"
     done
-    echo "]"
+    printf "]"
+}
+
+display_system_report() {
+    local scan_id=$1 hostname=$2 os_info=$3 kernel=$4 uptime=$5 boot_time=$6
+    local load_avg=$7 cpu_usage=$8 cpu_cores=$9 ram_total=${10} ram_used=${11} ram_free=${12} ram_percent=${13}
+    local swap_total=${14} swap_used=${15} swap_percent=${16}
+    local disk_total=${17} disk_used=${18} disk_free=${19} disk_percent=${20}
+    local interfaces=${21} active_connections=${22} health_score=${23} warnings=${24}
+    local top_procs=${25}
+
+    clear
+    tput civis 2>/dev/null || true
+    generate_info
+    # Header
+    echo -e "${BOLD}${BRIGHT_RED}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${BOLD}${BRIGHT_RED}║                      🕷️  REAL-TIME SYSTEM MONITOR                          ║${RESET}"
+    echo -e "${BOLD}${BRIGHT_RED}╠════════════════════════════════════════════════════════════════════════════╣${RESET}"
+    echo -e "${BOLD}${BRIGHT_RED}║${RESET} Scan ID: ${BRIGHT_MAGENTA}#${scan_id}${RESET}             ${DIM}Press 'q' to quit and return to menu${RESET}              ${BOLD}${BRIGHT_RED}║${RESET}"
+    echo -e "${BOLD}${BRIGHT_RED}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
+    echo ""
+    
+    # System Info (static)
+    echo -e "${BOLD}${BRIGHT_CYAN}- SYSTEM INFORMATION${RESET}"
+    echo -e "   ${DIM}Hostname:${RESET}  $hostname"
+    echo -e "   ${DIM}OS:${RESET}        $os_info"
+    echo -e "   ${DIM}Kernel:${RESET}    $kernel"
+    echo -e "   ${DIM}Uptime:${RESET}    $uptime"
+    echo ""
+    
+    # Save cursor position for dynamic updates
+    local cpu_line=$(tput lines)
+    tput sc
+    
+    # Reserve space for dynamic content
+    echo -e "${BOLD}${BRIGHT_CYAN}- CPU${RESET}"
+    echo "   Usage:                                                                      "
+    echo ""
+    echo -e "${BOLD}${BRIGHT_CYAN}- MEMORY${RESET}"
+    echo "   RAM:                                                                        "
+    echo ""
+    echo -e "${BOLD}${BRIGHT_CYAN}- DISK${RESET}"
+    echo "   Usage:                                                                      "
+    echo ""
+    echo -e "${BOLD}${BRIGHT_CYAN}- NETWORK${RESET}"
+    echo "   Active Connections:                                                         "
+    echo "   Throughput:                                                                 "
+    echo ""
+    echo -e "${BOLD}${BRIGHT_CYAN}- TOP 5 PROCESSES (by CPU)${RESET}"
+    for i in {1..5}; do echo "                                                                                "; done
+    
+    # Calculate line positions
+    local start_line=12
+    local cpu_val_line=$((start_line + 7))
+    local mem_val_line=$((start_line + 10))
+    local disk_val_line=$((start_line + 13))
+    local net_conn_line=$((start_line + 16))
+    local net_thr_line=$((start_line + 17))
+    local proc_start_line=$((start_line + 20))
+    
+    # Initialize CPU counters
+    read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq cpu_steal _ < /proc/stat
+    local prev_idle=$((cpu_idle + cpu_iowait))
+    local prev_non_idle=$((cpu_user + cpu_nice + cpu_system + cpu_irq + cpu_softirq + cpu_steal))
+    local prev_total=$((prev_idle + prev_non_idle))
+    
+    # Initialize network counters
+    local prev_rx=0 prev_tx=0
+    while read -r line; do
+        iface=$(echo "$line" | awk -F: '{print $1}' | xargs)
+        if [[ -z "$iface" || "$iface" == "lo" ]]; then continue; fi
+        vals=$(echo "$line" | awk -F: '{print $2}')
+        rx=$(echo $vals | awk '{print $1}')
+        tx=$(echo $vals | awk '{print $9}')
+        prev_rx=$((prev_rx + rx))
+        prev_tx=$((prev_tx + tx))
+    done < /proc/net/dev
+    
+    local interval=0.5
+    local stop=0
+    trap 'stop=1' SIGINT SIGTERM
+    
+    while [[ $stop -eq 0 ]]; do
+        # CPU calculation
+        read -r _ cpu_user cpu_nice cpu_system cpu_idle cpu_iowait cpu_irq cpu_softirq cpu_steal _ < /proc/stat
+        local idle=$((cpu_idle + cpu_iowait))
+        local non_idle=$((cpu_user + cpu_nice + cpu_system + cpu_irq + cpu_softirq + cpu_steal))
+        local total=$((idle + non_idle))
+        
+        local total_diff=$((total - prev_total))
+        local idle_diff=$((idle - prev_idle))
+        local cpu_usage_live="0.0"
+        if (( total_diff > 0 )); then
+            cpu_usage_live=$(awk "BEGIN {printf \"%.1f\", (1 - $idle_diff / $total_diff) * 100}")
+        fi
+        
+        prev_total=$total
+        prev_idle=$idle
+        
+        # Memory
+        local ram_total_live=$(free -m | awk 'NR==2{print $2}')
+        local ram_used_live=$(free -m | awk 'NR==2{print $3}')
+        local ram_percent_live=$(awk "BEGIN {printf \"%.1f\", ($ram_used_live/$ram_total_live)*100}")
+        
+        # Disk
+        local disk_percent_live=$(df / | awk 'NR==2{gsub("%",""); print $5}')
+        disk_percent_live=${disk_percent_live:-0}
+        
+        # Network
+        local cur_rx=0 cur_tx=0
+        while read -r line; do
+            iface=$(echo "$line" | awk -F: '{print $1}' | xargs)
+            if [[ -z "$iface" || "$iface" == "lo" ]]; then continue; fi
+            vals=$(echo "$line" | awk -F: '{print $2}')
+            rx=$(echo $vals | awk '{print $1}')
+            tx=$(echo $vals | awk '{print $9}')
+            cur_rx=$((cur_rx + rx))
+            cur_tx=$((cur_tx + tx))
+        done < /proc/net/dev
+        
+        local rx_rate=$((cur_rx - prev_rx))
+        local tx_rate=$((cur_tx - prev_tx))
+        local rx_rate_kbps=$(awk "BEGIN {printf \"%.1f\", ($rx_rate/$interval)/1024}")
+        local tx_rate_kbps=$(awk "BEGIN {printf \"%.1f\", ($tx_rate/$interval)/1024}")
+        
+        prev_rx=$cur_rx
+        prev_tx=$cur_tx
+        
+        # Active connections
+        local active_connections_live=$(ss -tun 2>/dev/null | sed 1d | wc -l)
+        
+        # Top processes
+        mapfile -t top_proc <<< "$(ps --no-headers -eo pid,user,%cpu,comm --sort=-%cpu | head -n 5)"
+        
+        # Update CPU
+        tput cup $cpu_val_line 3
+        printf "   CPU: %6s%% " "$cpu_usage_live"
+        draw_bar_inline "$cpu_usage_live" 100 40 "$BRIGHT_BLUE"
+        tput el
+        
+        # Update Memory
+        tput cup $mem_val_line 3
+        printf "   RAM: %6s%% (%s/%s MB) " "$ram_percent_live" "$ram_used_live" "$ram_total_live"
+        draw_bar_inline "$ram_percent_live" 100 30 "$BRIGHT_GREEN"
+        tput el
+        
+        # Update Disk
+        tput cup $disk_val_line 3
+        printf "   Disk: %3s%% (Free: %s) " "$disk_percent_live" "$disk_free"
+        draw_bar_inline "$disk_percent_live" 100 30 "$BRIGHT_MAGENTA"
+        tput el
+        
+        # Update Network
+        tput cup $net_conn_line 3
+        printf "   Active Connections: ${BRIGHT_YELLOW}%s${RESET}" "$active_connections_live"
+        tput el
+        
+        tput cup $net_thr_line 3
+        printf "   RX: ${BRIGHT_GREEN}%7s KB/s${RESET}  |  TX: ${BRIGHT_RED}%7s KB/s${RESET}" "$rx_rate_kbps" "$tx_rate_kbps"
+        tput el
+        
+        # Update Top Processes
+        for i in "${!top_proc[@]}"; do
+            tput cup $((proc_start_line + i)) 0
+            line=${top_proc[$i]}
+            pid=$(echo "$line" | awk '{print $1}')
+            user=$(echo "$line" | awk '{print $2}')
+            cpu_p=$(echo "$line" | awk '{print $3}')
+            cmd=$(echo "$line" | awk '{for (i=4;i<=NF;i++) printf $i " "; print ""}')
+            printf "   ${DIM}PID:${RESET}%-6s ${DIM}CPU:${RESET}%5s%%  ${DIM}USER:${RESET}%-10s ${DIM}CMD:${RESET} %-35.35s" "$pid" "$cpu_p" "$user" "$cmd"
+            tput el
+        done
+        
+        # Check for quit key
+        read -t $interval -n 1 key 2>/dev/null || key=""
+        if [[ $key == "q" || $key == "Q" ]]; then
+            stop=1
+        fi
+    done
+    
+    # Restore cursor and cleanup
+    tput cnorm 2>/dev/null || true
+    echo ""
+    echo ""
+    echo -e "${BOLD}${BRIGHT_MAGENTA}═══════════════════════════════════════════════════════════════${RESET}"
+    echo -e "${DIM}Scan stored in database with ID: $scan_id${RESET}"
+    echo -e "${DIM}Database location: $SPIDER_DB${RESET}"
 }
 
 # ============================================================================
 # MAIN LOOP
 # ============================================================================
 main() { 
-        clear
-        generate_info
-        init_database
-        collect_system_info
-        echo -e "🕸️    ${BOLD}${BRIGHT_RED}YOUR SPIDER ATE: ${RESET}Press Enter to continue..."
-        read -r
+    clear
+    init_database
+    generate_info
+    collect_system_info
+    echo ""
+    echo -e "${BOLD}${BRIGHT_RED}🕷️  YOUR SPIDER ATE:${RESET} Press Enter to continue..."
+    read -r
+    exit 0
 }
 
 main

@@ -185,7 +185,8 @@ handle_menu_choice() {
     case $choice in
         1)
             # Confirm before launching
-            read -r -p $'\nAre you sure to launch the system scan ? [yes/no]: ' confirm
+            printf "\n  %bAre you sure you want to launch the system scan? %b[yes/no]: " "${BRIGHT_MAGENTA}" "${RESET}"
+            read -r confirm
             case "${confirm,,}" in
             y|yes)
                 sleep 1
@@ -204,7 +205,7 @@ handle_menu_choice() {
                 fi
 
                 if (( rc == 0 )); then
-                    echo -e "${BRIGHT_MAGENTA}systemScan completed successfully (exit ${rc}).${RESET}"
+                    return 0
                 else
                     echo -e "${BRIGHT_RED}systemScan failed with exit code ${rc}.${RESET}"
                 fi
