@@ -32,9 +32,6 @@ generate_info() {
         "${BOLD}${BRIGHT_RED}|    |___ |___ |__/      |   |__| |__| |  \\    ___] |    | |__/ |___ |  \\ ${RESET}"
         "${BOLD}${BRIGHT_RED}                                                                          ${RESET}"
         ""
-        "${BOLD}${BRIGHT_MAGENTA}Running system scan...${RESET}"
-        ""
-        ""
     )
     
     printf '%s\n' "${menu_lines[@]}"
@@ -338,8 +335,8 @@ display_system_report() {
     done <<< "$top_procs"
     
     echo -e "\n${BOLD}${BRIGHT_MAGENTA}═══════════════════════════════════════════════════════════════${RESET}"
-    echo -e "${DIM}Scan stored in database with ID: $scan_id${RESET}"
-    echo -e "${DIM}Database location: $SPIDER_DB${RESET}"
+    echo -e "Scan stored in database with ID: ${DIM}$scan_id${RESET}"
+    echo -e "Database location: ${DIM}$SPIDER_DB${RESET}"
 }
 
 draw_bar() {
