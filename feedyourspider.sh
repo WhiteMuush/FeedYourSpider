@@ -66,7 +66,7 @@ generate_menu() {
         "${BOLD}${BRIGHT_MAGENTA}${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${DIM}Spider is hungry... Feed it with machine data!${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}"
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[1]${RESET} System Scan             "
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[1]${RESET} System Monitor          "
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[2]${RESET} Network Discovery       "
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[3]${RESET} Performance Analysis    "
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[4]${RESET} Security Audit          "
@@ -190,27 +190,51 @@ handle_menu_choice() {
             case "${confirm,,}" in
             y|yes)
                 sleep 1
-                local script_dir target rc
+                local script_dir target venv_dir venv_python rc
                 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-                target="$script_dir/tools/systemScan.sh"
+                target="$script_dir/tools/systemScan/feedyourspider_monitor.py"
+                venv_dir="$script_dir/venv"
+                venv_python="$venv_dir/bin/python"
+                rc=1
                 if [[ -f "$target" ]]; then
-                if [[ -x "$target" ]]; then
-                    echo -e "${DIM}Running ${target}...${RESET}"
-                    "$target"
-                    rc=$?
+                    if [[ ! -d "$venv_dir" ]]; then
+                        echo -e "${BRIGHT_MAGENTA}Creating Python virtual environment...${RESET}"
+                        if python3 -m venv "$venv_dir" >/dev/null 2>&1; then
+                            echo -e "${BRIGHT_GREEN}Virtual environment ready.${RESET}"
+                        else
+                            echo -e "${BRIGHT_RED}Failed to create virtual environment.${RESET}"
+                        fi
+                    fi
+
+                    if [[ -x "$venv_python" ]]; then
+                        rc=0
+                        "$venv_python" -m pip install --upgrade pip >/dev/null 2>&1 || true
+                        if ! "$venv_python" -c "import psutil" >/dev/null 2>&1; then
+                            echo -e "${BRIGHT_MAGENTA}Installing required Python modules...${RESET}"
+                            if "$venv_python" -m pip install psutil >/dev/null 2>&1; then
+                                echo -e "${BRIGHT_GREEN}Dependencies installed.${RESET}"
+                            else
+                                echo -e "${BRIGHT_RED}Failed to install dependencies automatically.${RESET}"
+                                rc=1
+                            fi
+                        fi
+
+                        if (( rc == 0 )); then
+                            echo -e "${DIM}Running ${target}...${RESET}"
+                            "$venv_python" "$target"
+                            rc=$?
+                        fi
+                    else
+                        echo -e "${BRIGHT_RED}Virtual environment not configured correctly.${RESET}"
+                    fi
                 else
-                    echo -e "${DIM}${target} is not executable, running with bash...${RESET}"
-                    bash "$target"
-                    rc=$?
+                    echo -e "${BRIGHT_RED}systemScan script not found at: ${target}${RESET}"
                 fi
 
                 if (( rc == 0 )); then
                     return 0
                 else
                     echo -e "${BRIGHT_RED}systemScan failed with exit code ${rc}.${RESET}"
-                fi
-                else
-                echo -e "${BRIGHT_RED}systemScan script not found at: ${target}${RESET}"
                 fi
                 ;;
             *)
