@@ -185,6 +185,41 @@ handle_menu_choice() {
     
     case $choice in
         1)
+        # Verify nmap is installed; attempt automated install if missing
+        if ! command -v nmap >/dev/null 2>&1; then
+            echo -e "${BRIGHT_MAGENTA}nmap not found. Attempting to install...${RESET}"
+            if [[ "$(uname)" == "Darwin" ]]; then
+                if command -v brew >/dev/null 2>&1; then
+                    brew install nmap || { echo -e "${BRIGHT_RED}Failed to install nmap via brew.${RESET}"; return; }
+                else
+                    echo -e "${BRIGHT_RED}Homebrew not found. Please install Homebrew or nmap manually.${RESET}"
+                    return
+                fi
+            else
+                if command -v apt-get >/dev/null 2>&1; then
+                    sudo apt-get update && sudo apt-get install -y nmap || { echo -e "${BRIGHT_RED}apt-get install failed.${RESET}"; return; }
+                elif command -v dnf >/dev/null 2>&1; then
+                    sudo dnf install -y nmap || { echo -e "${BRIGHT_RED}dnf install failed.${RESET}"; return; }
+                elif command -v yum >/dev/null 2>&1; then
+                    sudo yum install -y nmap || { echo -e "${BRIGHT_RED}yum install failed.${RESET}"; return; }
+                elif command -v pacman >/dev/null 2>&1; then
+                    sudo pacman -Sy --noconfirm nmap || { echo -e "${BRIGHT_RED}pacman install failed.${RESET}"; return; }
+                elif command -v zypper >/dev/null 2>&1; then
+                    sudo zypper --non-interactive install nmap || { echo -e "${BRIGHT_RED}zypper install failed.${RESET}"; return; }
+                else
+                    echo -e "${BRIGHT_RED}Unsupported system or package manager. Please install nmap manually.${RESET}"
+                    return
+                fi
+            fi
+
+            # re-check
+            if ! command -v nmap >/dev/null 2>&1; then
+                echo -e "${BRIGHT_RED}nmap still not available after install attempt.${RESET}"
+                return
+            fi
+
+            echo -e "${BRIGHT_MAGENTA}nmap installed successfully.${RESET}"
+        fi
             echo -e "\n${BRIGHT_MAGENTA}Launching Nmap${RESET}"
 
             # Prompt for target
@@ -275,6 +310,43 @@ handle_menu_choice() {
             fi
         ;;
         2)
+        # Check/install netcat (nc)
+        if ! command -v nc >/dev/null 2>&1 && ! command -v netcat >/dev/null 2>&1; then
+            echo -e "${BRIGHT_MAGENTA}netcat not found. Attempting to install...${RESET}"
+            if [[ "$(uname)" == "Darwin" ]]; then
+                if command -v brew >/dev/null 2>&1; then
+                    brew install netcat || { echo -e "${BRIGHT_RED}Failed to install netcat via brew.${RESET}"; return; }
+                else
+                    echo -e "${BRIGHT_RED}Homebrew not found. Please install Homebrew or netcat manually.${RESET}"
+                    return
+                fi
+            else
+                if command -v apt-get >/dev/null 2>&1; then
+                    sudo apt-get update && sudo apt-get install -y netcat-openbsd || sudo apt-get install -y netcat || { echo -e "${BRIGHT_RED}apt-get install failed.${RESET}"; return; }
+                elif command -v dnf >/dev/null 2>&1; then
+                    sudo dnf install -y nmap-ncat || sudo dnf install -y netcat || { echo -e "${BRIGHT_RED}dnf install failed.${RESET}"; return; }
+                elif command -v yum >/dev/null 2>&1; then
+                    sudo yum install -y nmap-ncat || sudo yum install -y netcat || { echo -e "${BRIGHT_RED}yum install failed.${RESET}"; return; }
+                elif command -v pacman >/dev/null 2>&1; then
+                    sudo pacman -Sy --noconfirm gnu-netcat || sudo pacman -Sy --noconfirm openbsd-netcat || { echo -e "${BRIGHT_RED}pacman install failed.${RESET}"; return; }
+                elif command -v zypper >/dev/null 2>&1; then
+                    sudo zypper --non-interactive install netcat-openbsd || sudo zypper --non-interactive install netcat || { echo -e "${BRIGHT_RED}zypper install failed.${RESET}"; return; }
+                elif command -v apk >/dev/null 2>&1; then
+                    sudo apk add netcat-openbsd || sudo apk add netcat || { echo -e "${BRIGHT_RED}apk install failed.${RESET}"; return; }
+                else
+                    echo -e "${BRIGHT_RED}Unsupported system or package manager. Please install netcat manually.${RESET}"
+                    return
+                fi
+            fi
+
+            # re-check
+            if ! command -v nc >/dev/null 2>&1 && ! command -v netcat >/dev/null 2>&1; then
+                echo -e "${BRIGHT_RED}netcat still not available after install attempt.${RESET}"
+                return
+            fi
+
+            echo -e "${BRIGHT_MAGENTA}netcat installed successfully.${RESET}"
+        fi
             echo -e "\n${BRIGHT_MAGENTA}Launching Netcat${RESET}"
 
             # Ensure nc/netcat is available
