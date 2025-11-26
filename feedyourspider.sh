@@ -12,14 +12,14 @@ readonly RED="$(tput setaf 1)"
 readonly GREEN="$(tput setaf 2)"
 readonly BLUE="$(tput setaf 4)"
 readonly MAGENTA="$(tput setaf 5)"
-readonly RED="$(tput setaf 6)"
+readonly CYAN="$(tput setaf 6)"
 
 # Bright colors
 readonly BRIGHT_RED="$(tput setaf 9)"
 readonly BRIGHT_GREEN="$(tput setaf 10)"
 readonly BRIGHT_BLUE="$(tput setaf 12)"
 readonly BRIGHT_MAGENTA="$(tput setaf 13)"
-readonly BRIGHT_RED="$(tput setaf 14)"
+readonly BRIGHT_CYAN="$(tput setaf 14)"
 
 # ============================================================================
 # ASCII ART BANNER
@@ -66,15 +66,16 @@ generate_menu() {
         "${BOLD}${BRIGHT_MAGENTA}${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${DIM}Spider is hungry... Feed it with machine data!${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}"
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[1]${RESET} System Monitor          "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[2]${RESET} Network Discovery       "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[3]${RESET} Performance Analysis    "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[4]${RESET} Security Audit          "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[5]${RESET} Log Analysis            "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[6]${RESET} Full Spider Scan (ALL) "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[7]${RESET} View Collected Data     "
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[8]${RESET} Install Dependencies"
-        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[9]${RESET} Clean Data"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[1]${RESET} Nmap"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[2]${RESET} Netcat"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[3]${RESET} Tcpdump"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[4]${RESET} Wireshark (tshark)"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[5]${RESET} Hping3"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[6]${RESET} Arp-scan"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[7]${RESET} Masscan"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[8]${RESET} nikto"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[9]${RESET} Dnsenum"
+        "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[9]${RESET} Whatweb"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}    ${BRIGHT_RED}[0]${RESET}Exit"
         "${BOLD}${BRIGHT_MAGENTA}░${RESET}"
@@ -184,99 +185,256 @@ handle_menu_choice() {
     
     case $choice in
         1)
-            # Confirm before launching
-            printf "\n  %bAre you sure you want to launch the system scan? %b[yes/no]: " "${BRIGHT_MAGENTA}" "${RESET}"
-            read -r confirm
-            case "${confirm,,}" in
-            y|yes)
-                sleep 1
-                local script_dir target venv_dir venv_python rc
-                script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-                target="$script_dir/tools/systemScan/feedyourspider_monitor.py"
-                venv_dir="$script_dir/venv"
-                venv_python="$venv_dir/bin/python"
-                rc=1
-                if [[ -f "$target" ]]; then
-                    if [[ ! -d "$venv_dir" ]]; then
-                        echo -e "${BRIGHT_MAGENTA}Creating Python virtual environment...${RESET}"
-                        if python3 -m venv "$venv_dir" >/dev/null 2>&1; then
-                            echo -e "${BRIGHT_GREEN}Virtual environment ready.${RESET}"
-                        else
-                            echo -e "${BRIGHT_RED}Failed to create virtual environment.${RESET}"
-                        fi
+            echo -e "\n${BRIGHT_MAGENTA}Launching Nmap${RESET}"
+
+            # Prompt for target
+            read -rp $'\nTarget (ip/host or CIDR) > ' target
+            if [[ -z $target ]]; then
+                echo -e "${BRIGHT_RED}No target provided.${RESET}"
+                return
+            fi
+
+            # Ensure nmap is available
+            if ! command -v nmap >/dev/null 2>&1; then
+                echo -e "${BRIGHT_RED}nmap is not installed. Install it (e.g. sudo apt install nmap) and try again.${RESET}"
+                return
+            fi
+
+            # Prepare output directory and base filename
+            outdir="$HOME/feedyourspider_nmap"
+            mkdir -p "$outdir"
+            safe_target=$(printf "%s" "$target" | sed 's/[^A-Za-z0-9._-]/_/g')
+            outbase="$outdir/scan_${safe_target}_$(date +%Y%m%d_%H%M%S)"
+
+            # Let user pick a scan profile
+            echo
+            echo "Select scan type:"
+            echo "  [1] Quick (top ports)"
+            echo "  [2] Service/version (-sV + default scripts)"
+            echo "  [3] Aggressive (-A)"
+            echo "  [4] All ports (-p-)"
+            echo "  [5] SYN stealth (-sS)"
+            echo "  [6] Custom args"
+            read -rp $'Choice [1-6] > ' nmap_choice
+
+            # Build nmap arguments as an array (safer quoting)
+            declare -a nmap_args
+            case "$nmap_choice" in
+                1)
+                    nmap_args=(-T4 --top-ports 100 -oA "$outbase")
+                    ;;
+                2)
+                    nmap_args=(-sV -sC -T4 -oA "$outbase")
+                    ;;
+                3)
+                    nmap_args=(-A -T4 -oA "$outbase")
+                    ;;
+                4)
+                    nmap_args=(-p- -T4 -oA "$outbase")
+                    ;;
+                5)
+                    nmap_args=(-sS -T4 -oA "$outbase")
+                    ;;
+                6)
+                    read -rp $'Enter custom nmap args (example: -p 1-65535 -sV) > ' custom_args
+                    # split custom args into array safely (simple splitting on spaces)
+                    # user should avoid complex quoting; this keeps it straightforward
+                    if [[ -z $custom_args ]]; then
+                        echo -e "${BRIGHT_RED}No custom args provided. Aborting.${RESET}"
+                        return
                     fi
+                    # build array: word-split on IFS
+                    IFS=' ' read -r -a user_args <<< "$custom_args"
+                    nmap_args=("${user_args[@]}" -oA "$outbase")
+                    ;;
+                *)
+                    echo -e "${BRIGHT_RED}Invalid choice.${RESET}"
+                    return
+                    ;;
+            esac
 
-                    if [[ -x "$venv_python" ]]; then
-                        rc=0
-                        "$venv_python" -m pip install --upgrade pip >/dev/null 2>&1 || true
-                        if ! "$venv_python" -c "import psutil" >/dev/null 2>&1; then
-                            echo -e "${BRIGHT_MAGENTA}Installing required Python modules...${RESET}"
-                            if "$venv_python" -m pip install psutil >/dev/null 2>&1; then
-                                echo -e "${BRIGHT_GREEN}Dependencies installed.${RESET}"
-                            else
-                                echo -e "${BRIGHT_RED}Failed to install dependencies automatically.${RESET}"
-                                rc=1
-                            fi
-                        fi
+            echo -e "\n${DIM}Saving results to ${outbase}.{nmap,gnmap,xml}${RESET}"
 
-                        if (( rc == 0 )); then
-                            echo -e "${DIM}Running ${target}...${RESET}"
-                            "$venv_python" "$target"
-                            rc=$?
-                        fi
+            # Decide if we should use sudo (some scans require root for best results)
+            local need_sudo=0
+            for a in "${nmap_args[@]}"; do
+                case "$a" in
+                    -sS|-A|-p-)
+                        need_sudo=1
+                        break
+                        ;;
+                esac
+            done
+
+            echo -e "${BRIGHT_MAGENTA}Running: nmap ${nmap_args[*]} ${target}${RESET}"
+            if (( need_sudo )); then
+                echo -e "${DIM}Using sudo for this scan (you may be prompted for your password)${RESET}"
+                sudo nmap "${nmap_args[@]}" "$target"
+            else
+                nmap "${nmap_args[@]}" "$target"
+            fi
+        ;;
+        2)
+            echo -e "\n${BRIGHT_MAGENTA}Launching Netcat${RESET}"
+
+            # Ensure nc/netcat is available
+            if ! command -v nc >/dev/null 2>&1 && ! command -v netcat >/dev/null 2>&1; then
+            echo -e "${BRIGHT_RED}netcat (nc) is not installed. Install it (e.g. sudo apt install netcat-openbsd) and try again.${RESET}"
+            return
+            fi
+            nc_cmd=$(command -v nc || command -v netcat)
+
+            outdir="$HOME/feedyourspider_netcat"
+            mkdir -p "$outdir"
+
+            echo
+            echo "Netcat actions:"
+            echo "  [1] Connect to host (client)"
+            echo "  [2] Listen (server)"
+            echo "  [3] File transfer (send/receive)"
+            echo "  [4] Banner grab"
+            echo "  [5] Custom args"
+            read -rp $'Choice [1-5] > ' nc_choice
+
+            case "$nc_choice" in
+            1)
+                read -rp $'Target (ip/host) > ' target
+                read -rp $'Port > ' port
+                read -rp $'Protocol [tcp/udp] (tcp) > ' proto
+                proto=${proto:-tcp}
+
+                declare -a nc_args
+                [[ $proto == "udp" ]] && nc_args+=(-u)
+                nc_args+=(-v -w 5 "$target" "$port")
+
+                outbase="$outdir/connect_${target}_${port}_$(date +%Y%m%d_%H%M%S).log"
+                echo -e "${DIM}Saving session to ${outbase}${RESET}"
+                echo -e "${BRIGHT_MAGENTA}Running: $nc_cmd ${nc_args[*]}${RESET}"
+                "$nc_cmd" "${nc_args[@]}" |& tee "$outbase"
+                ;;
+            2)
+                read -rp $'Listen port > ' port
+                read -rp $'Protocol [tcp/udp] (tcp) > ' proto
+                proto=${proto:-tcp}
+
+                outbase="$outdir/listen_${port}_$(date +%Y%m%d_%H%M%S).log"
+                echo -e "${DIM}Saving incoming data to ${outbase}${RESET}"
+
+                if [[ $proto == "udp" ]]; then
+                echo -e "${BRIGHT_MAGENTA}Listening UDP on port ${port}${RESET}"
+                "$nc_cmd" -u -l "$port" |& tee "$outbase"
+                else
+                echo -e "${BRIGHT_MAGENTA}Listening TCP on port ${port}${RESET}"
+                # Try to be portable between flavors (OpenBSD nc uses "-l port", GNU ncat/netcat may expect "-l -p port")
+                if "$nc_cmd" -h 2>&1 | grep -qi -- "-p"; then
+                    # this branch will work for netcat implementations advertising -p
+                    "$nc_cmd" -l -p "$port" |& tee "$outbase"
+                else
+                    "$nc_cmd" -l "$port" |& tee "$outbase"
+                fi
+                fi
+                ;;
+            3)
+                echo "File transfer:"
+                echo "  [1] Send file to remote (client)"
+                echo "  [2] Receive file (server/listen)"
+                read -rp $'Choice [1-2] > ' ft_choice
+                case "$ft_choice" in
+                1)
+                    read -rp $'Target (ip/host) > ' target
+                    read -rp $'Port > ' port
+                    read -rp $'Path to file to send > ' filepath
+                    if [[ ! -f $filepath ]]; then
+                    echo -e "${BRIGHT_RED}File not found: $filepath${RESET}"
+                    return
+                    fi
+                    echo -e "${BRIGHT_MAGENTA}Sending ${filepath} -> ${target}:${port}${RESET}"
+                    outbase="$outdir/send_$(basename "$filepath")_${target}_${port}_$(date +%Y%m%d_%H%M%S).log"
+                    # send file
+                    "$nc_cmd" "$target" "$port" < "$filepath" |& tee "$outbase"
+                    ;;
+                2)
+                    read -rp $'Listen port > ' port
+                    read -rp $'Output filename (optional) > ' outname
+                    outpath="$outdir/${outname:-received_$(date +%Y%m%d_%H%M%S)}"
+                    echo -e "${BRIGHT_MAGENTA}Listening on port ${port}, saving to ${outpath}${RESET}"
+                    # Attempt portable listen
+                    if "$nc_cmd" -h 2>&1 | grep -qi -- "-p"; then
+                    "$nc_cmd" -l -p "$port" > "$outpath"
                     else
-                        echo -e "${BRIGHT_RED}Virtual environment not configured correctly.${RESET}"
+                    "$nc_cmd" -l "$port" > "$outpath"
                     fi
+                    echo -e "${DIM}Saved to ${outpath}${RESET}"
+                    ;;
+                *)
+                    echo -e "${BRIGHT_RED}Invalid choice.${RESET}"
+                    ;;
+                esac
+                ;;
+            4)
+                read -rp $'Target (ip/host) > ' target
+                read -rp $'Port > ' port
+                read -rp $'Protocol [tcp/udp] (tcp) > ' proto
+                proto=${proto:-tcp}
+                echo -e "${BRIGHT_MAGENTA}Banner grab ${target}:${port} (${proto})${RESET}"
+                if [[ $proto == "udp" ]]; then
+                "$nc_cmd" -u -v -w 3 "$target" "$port"
                 else
-                    echo -e "${BRIGHT_RED}systemScan script not found at: ${target}${RESET}"
+                # Try a simple HTTP probe first, fallback to raw connect
+                printf "HEAD / HTTP/1.0\r\n\r\n" | "$nc_cmd" -v -w 3 "$target" "$port" || "$nc_cmd" -v -w 3 "$target" "$port"
                 fi
-
-                if (( rc == 0 )); then
-                    return 0
-                else
-                    echo -e "${BRIGHT_RED}systemScan failed with exit code ${rc}.${RESET}"
+                ;;
+            5)
+                read -rp $'Enter custom nc args (example: -v -w 3 target port) > ' custom_args
+                if [[ -z $custom_args ]]; then
+                echo -e "${BRIGHT_RED}No custom args provided.${RESET}"
+                return
                 fi
+                IFS=' ' read -r -a user_args <<< "$custom_args"
+                echo -e "${BRIGHT_MAGENTA}Running: $nc_cmd ${user_args[*]}${RESET}"
+                "$nc_cmd" "${user_args[@]}"
                 ;;
             *)
-                echo -e "\n${BRIGHT_RED}System scan canceled by user.${RESET}"
+                echo -e "${BRIGHT_RED}Invalid choice.${RESET}"
                 ;;
             esac
-            ;;
-        2)
-            echo -e "\n${BRIGHT_MAGENTA}Launching Network Discovery...${RESET}"
-            # TODO: Implement network discovery
-            ;;
+        ;;
         3)
-            echo -e "\n${BRIGHT_MAGENTA}Launching Performance Analysis...${RESET}"
-            # TODO: Implement performance analysis
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Tcpdump${RESET}"
+            # Placeholder for Tcpdump functionality
+        ;;
         4)
-            echo -e "\n${BRIGHT_MAGENTA}Launching Security Audit...${RESET}"
-            # TODO: Implement security audit
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Wireshark (tshark)${RESET}"
+            # Placeholder for tshark functionality
+        ;;
         5)
-            echo -e "\n${BRIGHT_MAGENTA}Launching Log Analysis...${RESET}"
-            # TODO: Implement log analysis
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Hping3${RESET}"
+            # Placeholder for hping3 functionality
+        ;;
         6)
-            echo -e "\n${BRIGHT_MAGENTA}Launching Full Spider Scan...${RESET}"
-            # TODO: Implement full scan
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Arp-scan${RESET}"
+            # Placeholder for arp-scan functionality
+        ;;
         7)
-            echo -e "\n${BRIGHT_MAGENTA}Displaying Collected Data...${RESET}"
-            # TODO: Implement data viewer
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Masscan${RESET}"
+            # Placeholder for masscan functionality
+        ;;
         8)
-            echo -e "\n${BRIGHT_MAGENTA}Installing Dependencies...${RESET}"
-            # TODO: Implement dependency installer
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Nikto${RESET}"
+            # Placeholder for nikto functionality
+        ;;
         9)
-            echo -e "\n${BRIGHT_MAGENTA}Cleaning Data...${RESET}"
-            # TODO: Implement data cleanup
-            ;;
+            echo -e "\n${BRIGHT_MAGENTA}Launching Dnsenum${RESET}"
+            # Placeholder for dnsenum functionality
+        ;;
+        10)
+            echo -e "\n${BRIGHT_MAGENTA}Launching Whatweb${RESET}"
+            # Placeholder for whatweb functionality
+        ;;
         0)
-            echo -e "\n${BRIGHT_GREEN}Spider is going to sleep... Goodbye!${RESET}\n"
+            echo -e "\n${BRIGHT_MAGENTA}Exiting...${RESET}"
             exit 0
+            
             ;;
         *)
             echo -e "\n${BRIGHT_RED}Invalid choice. Please try again.${RESET}"
