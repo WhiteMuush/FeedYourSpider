@@ -1,7 +1,7 @@
 
-Interactive too![TITLE](https://github.com/user-attachments/assets/9dc512ae-4349-4b13-b5ff-6e227ef8d26d)
+![TITLE](https://github.com/user-attachments/assets/9dc512ae-4349-4b13-b5ff-6e227ef8d26d)
 
-lkit launcher for common network tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum, whatweb).
+Interactive toolkit launcher for common network tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum, whatweb).
 
 This repository contains `feedyourspider.sh` — a small, terminal-first menu that helps run common reconnaissance and capture tools, saves outputs to timestamped directories, and attempts to install missing tools automatically on many platforms.
 
@@ -15,7 +15,16 @@ This repository contains `feedyourspider.sh` — a small, terminal-first menu th
 ## Requirements
 - Bash (sh compatible)
 - One or more of the network tools below depending on what you want to run:
-    - nmap, netcat (nc / netcat), tcpdump, tshark (wireshark), hping3, arp-scan, masscan, nikto, dnsenum, whatweb
+    - [Nmap](https://nmap.org/)
+    - [Netcat / Ncat (nc)](https://nmap.org/ncat/)
+    - [tcpdump](https://www.tcpdump.org/)
+    - [TShark (Wireshark)](https://www.wireshark.org/docs/man-pages/tshark.html)
+    - [hping3](http://www.hping.org/)
+    - [arp-scan](https://github.com/royhills/arp-scan)
+    - [masscan](https://github.com/robertdavidgraham/masscan)
+    - [Nikto](https://github.com/sullo/nikto)
+    - [dnsenum](https://github.com/fwaeytens/dnsenum)
+    - [WhatWeb](https://github.com/urbanadventurer/WhatWeb)
 - sudo for installing packages and for some capture or raw-socket operations
 
 ## Installation
