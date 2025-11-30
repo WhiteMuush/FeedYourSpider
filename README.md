@@ -1,5 +1,7 @@
 # Feed Your Spider
 
+![spider-3d](https://github.com/user-attachments/assets/8b0ba43e-fe2d-4ed3-a591-413d29d56794)
+
 Interactive toolkit launcher for common network tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum, whatweb).
 
 This repository contains `feedyourspider.sh` — a small, terminal-first menu that helps run common reconnaissance and capture tools, saves outputs to timestamped directories, and attempts to install missing tools automatically on many platforms.
@@ -39,6 +41,8 @@ Example: run a quick nmap scan
 1. Start script.
 2. Choose `1` (Nmap).
 3. Provide a target (IP/CIDR) and select a scan profile.
+
+https://github.com/user-attachments/assets/b8e987ae-54cf-4260-a6e5-ea610a3b0ad1
 
 ## Notes & Safety
 - Use only on systems and networks where you have explicit authorization.
