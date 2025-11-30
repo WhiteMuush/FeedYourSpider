@@ -3,7 +3,7 @@
 
 Interactive toolkit launcher for common network tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum, whatweb).
 
-This repository contains `feedyourspider.sh` — a small, terminal-first menu that helps run common reconnaissance and capture tools, saves outputs to timestamped directories, and attempts to install missing tools automatically on many platforms.
+This repository contains `feedyourspider.sh`, a small, terminal-first menu that helps run common reconnaissance and capture tools, saves outputs to timestamped directories, and attempts to install missing tools automatically on many platforms.
 
 ## Features
 - Colorful ASCII banner and a menu-driven interface.
@@ -55,7 +55,7 @@ https://github.com/user-attachments/assets/b99f1de3-5ecd-4964-b53c-7a4999e15855
 ## Notes & Safety
 - Use only on systems and networks where you have explicit authorization.
 - Some operations require elevated privileges (sudo) or may trigger security alerts.
-- The script is intended as a convenience wrapper — review commands before running, especially with custom args.
+- The script is intended as a convenience wrapper, review commands before running, especially with custom args.
 
 ## Contributing
 PRs and issues are welcome. Keep changes minimal and shell-lint friendly. Prefer POSIX/Bash-compatible constructs.
