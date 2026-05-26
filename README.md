@@ -1,67 +1,107 @@
+# FeedYourSpider
 
 ![TITLE](https://github.com/user-attachments/assets/9dc512ae-4349-4b13-b5ff-6e227ef8d26d)
 
-Interactive toolkit launcher for common network tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum, whatweb).
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![CI](https://github.com/WhiteMuush/FeedYourSpider/actions/workflows/ci.yml/badge.svg)](https://github.com/WhiteMuush/FeedYourSpider/actions/workflows/ci.yml)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-This repository contains `feedyourspider.sh`, a small, terminal-first menu that helps run common reconnaissance and capture tools, saves outputs to timestamped directories, and attempts to install missing tools automatically on many platforms.
+Interactive terminal launcher for common network and reconnaissance tools
+(nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum,
+whatweb). Saves outputs to timestamped directories and installs missing
+tools automatically on most Linux distributions and macOS.
 
 ## Features
+
 - Colorful ASCII banner and a menu-driven interface.
-- Quick access to common network utilities with useful presets.
-- Saves results into per-tool timestamped directories under $HOME.
-- Attempts to install missing tools (supports apt, dnf, yum, pacman, zypper, apk, Homebrew).
-- Lightweight, POSIX-friendly Bash with safe quoting and minimal dependencies.
+- Quick access to common network utilities with sensible presets.
+- Per-tool, timestamped output directories under `$HOME`
+  (override with `FEEDYOURSPIDER_OUTPUT_ROOT`).
+- Automatic installation of missing tools across apt, dnf, yum, pacman,
+  zypper, apk, and Homebrew via a single `ensure_command` helper.
+- Modular layout: each tool is one ~30-line file under `lib/modules/`.
+  Adding a new tool is a 4-step recipe documented in
+  [docs/ADDING_A_TOOL.md](docs/ADDING_A_TOOL.md).
+
+## Quick start
+
+```bash
+git clone https://github.com/WhiteMuush/FeedYourSpider.git
+cd FeedYourSpider
+chmod +x feedyourspider.sh
+./feedyourspider.sh
+```
+
+Pick a numbered menu item. The script will offer to install the tool if
+it isn't already on `PATH`, then prompt for targets, ports, interfaces,
+or custom arguments.
+
+Outputs land under `$HOME/feedyourspider_<tool>/`, for example:
+
+- `$HOME/feedyourspider_nmap/`
+- `$HOME/feedyourspider_tcpdump/`
+- `$HOME/feedyourspider_netcat/`
+
+Use `Ctrl+C` to stop a live capture.
+
+## Project layout
+
+```
+feedyourspider.sh        Thin orchestrator: sources lib/ and runs the menu loop.
+lib/
+  core.sh                TTY-aware colors, constants, output helpers.
+  installer.sh           Logging, prompts, ensure_command / install_package.
+  ui.sh                  ASCII banner, title screen, side-by-side renderer.
+  modules/<tool>.sh      One file per tool. Exposes <tool>_run().
+docs/
+  ARCHITECTURE.md        Boot sequence and cross-cutting helpers.
+  ADDING_A_TOOL.md       Recipe for contributing a new tool.
+.github/                 CI workflow, issue templates, PR template.
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full layout.
 
 ## Requirements
-- Bash (sh compatible)
-- One or more of the network tools below depending on what you want to run:
-    - [Nmap](https://nmap.org/)
-    - [Netcat / Ncat (nc)](https://nmap.org/ncat/)
-    - [tcpdump](https://www.tcpdump.org/)
-    - [TShark (Wireshark)](https://www.wireshark.org/docs/man-pages/tshark.html)
-    - [hping3](http://www.hping.org/)
-    - [arp-scan](https://github.com/royhills/arp-scan)
-    - [masscan](https://github.com/robertdavidgraham/masscan)
-    - [Nikto](https://github.com/sullo/nikto)
-    - [dnsenum](https://github.com/fwaeytens/dnsenum)
-    - [WhatWeb](https://github.com/urbanadventurer/WhatWeb)
-- sudo for installing packages and for some capture or raw-socket operations
 
-## Installation
-1. Make the script executable:
-     chmod +x feedyourspider.sh
-2. Run:
-     ./feedyourspider.sh
+- Bash 4+
+- `sudo` for some captures, raw-socket scans, and automatic installs
+- One or more of the wrapped tools, on demand:
+  [Nmap](https://nmap.org/),
+  [Ncat / Netcat](https://nmap.org/ncat/),
+  [tcpdump](https://www.tcpdump.org/),
+  [TShark](https://www.wireshark.org/docs/man-pages/tshark.html),
+  [hping3](http://www.hping.org/),
+  [arp-scan](https://github.com/royhills/arp-scan),
+  [masscan](https://github.com/robertdavidgraham/masscan),
+  [Nikto](https://github.com/sullo/nikto),
+  [dnsenum](https://github.com/fwaeytens/dnsenum),
+  [WhatWeb](https://github.com/urbanadventurer/WhatWeb)
 
-The script will try to install missing tools automatically when you select a menu option; if automatic install fails, install the tool manually and re-run.
-
-## Usage
-- Launch the script and pick a numbered menu option.
-- Follow prompts for targets, interfaces, ports, or custom args.
-- Outputs are saved under directories like:
-    - $HOME/feedyourspider_nmap
-    - $HOME/feedyourspider_tcpdump
-    - $HOME/feedyourspider_netcat
-    - etc.
-- Use Ctrl+C to stop live captures.
-
-Example: run a quick nmap scan
-1. Start script.
-2. Choose `1` (Nmap).
-3. Provide a target (IP/CIDR) and select a scan profile.
+## Demo
 
 https://github.com/user-attachments/assets/b99f1de3-5ecd-4964-b53c-7a4999e15855
 
-## Notes & Safety
+## Safety
+
 - Use only on systems and networks where you have explicit authorization.
-- Some operations require elevated privileges (sudo) or may trigger security alerts.
-- The script is intended as a convenience wrapper, review commands before running, especially with custom args.
+- Some operations require elevated privileges or may trigger security alerts.
+- The script is a convenience wrapper. Review commands before running,
+  especially with custom args.
 
 ## Contributing
-PRs and issues are welcome. Keep changes minimal and shell-lint friendly. Prefer POSIX/Bash-compatible constructs.
+
+PRs and issues are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md) — it covers conventions,
+the contribution checklist, and the validation commands the CI runs.
+
+Adding a new tool? See [docs/ADDING_A_TOOL.md](docs/ADDING_A_TOOL.md);
+the typical contribution is around 30 lines.
 
 ## License
-100% FREE, no license required.
+
+GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 ## Disclaimer
-Provided as-is. The author is not responsible for misuse. Use responsibly and legally.
+
+Provided as-is. The author is not responsible for misuse. Use responsibly
+and legally.

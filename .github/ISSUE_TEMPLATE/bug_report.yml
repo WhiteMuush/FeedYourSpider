@@ -1,0 +1,88 @@
+name: Bug report
+description: Something is broken in feedyourspider.sh or one of the tool wrappers.
+title: "[Bug] <short description>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more precise the
+        report, the faster it can be fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: FeedYourSpider version
+      description: Output of `grep FEEDYOURSPIDER_VERSION lib/core.sh` or the commit SHA.
+      placeholder: "1.1.0 / abc123"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / Distribution
+      placeholder: "Ubuntu 24.04, Kali rolling, macOS 14.5, ..."
+    validations:
+      required: true
+
+  - type: input
+    id: bash
+    attributes:
+      label: Bash version
+      description: Output of `bash --version | head -1`.
+      placeholder: "GNU bash, version 5.2.21(1)-release"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - feedyourspider.sh (entry point)
+        - lib/core.sh
+        - lib/installer.sh
+        - lib/ui.sh
+        - module: nmap
+        - module: netcat
+        - module: tcpdump
+        - module: tshark
+        - module: hping3
+        - module: arp-scan
+        - module: masscan
+        - module: nikto
+        - module: dnsenum
+        - module: whatweb
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact menu choices, prompts answered, etc.
+      placeholder: |
+        1. Launch ./feedyourspider.sh
+        2. Pick [1] Nmap
+        3. Enter target "scanme.nmap.org"
+        4. Pick scan type [3] Aggressive
+        5. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste the full error message / log if any.
+    validations:
+      required: true

@@ -1,0 +1,28 @@
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Local environment
+.env
+.envrc
+*.local
+
+# Build / output artifacts (just in case)
+*.log
+*.pcap
+*.gnmap
+*.nmap
+*.xml
+
+# Tool-specific output dirs from feedyourspider.sh (when run inside the repo)
+feedyourspider_*/
+
+# Claude / agent tooling
+CLAUDE.md
+.claude/
+graphify-out/

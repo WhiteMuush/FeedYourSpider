@@ -1,0 +1,55 @@
+name: New tool request
+description: Suggest adding a new network or recon tool to the menu.
+title: "[Tool] Add <tool name>"
+labels: ["enhancement", "new tool"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Each tool is one module under `lib/modules/`. See `docs/ADDING_A_TOOL.md`
+        for the contribution recipe — most tools fit in a 30-line module.
+
+  - type: input
+    id: tool
+    attributes:
+      label: Tool name
+      placeholder: "gobuster, sslscan, amass, ..."
+    validations:
+      required: true
+
+  - type: input
+    id: homepage
+    attributes:
+      label: Homepage / source
+      placeholder: "https://github.com/..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use case
+      description: What does this tool do, and why does it belong in FeedYourSpider?
+    validations:
+      required: true
+
+  - type: textarea
+    id: packages
+    attributes:
+      label: Distribution packages
+      description: How is it packaged on apt / dnf / pacman / brew?
+      placeholder: |
+        apt: gobuster
+        dnf: gobuster
+        pacman: gobuster
+        brew: gobuster
+    validations:
+      required: false
+
+  - type: textarea
+    id: presets
+    attributes:
+      label: Useful presets / modes
+      description: What sub-commands or presets would the module expose in its menu?
+    validations:
+      required: false

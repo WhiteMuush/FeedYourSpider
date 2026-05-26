@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC1091 -e SC2034
+        with:
+          severity: warning
+
+  syntax:
+    name: bash -n syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check every shell script
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            if ! bash -n "$f"; then
+              echo "Syntax error in: $f"
+              fail=1
+            fi
+          done < <(find . -type f -name '*.sh' -not -path './.git/*' -print0)
+          exit "$fail"
+
+  smoke:
+    name: Smoke test (source chain + functions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source libs and check expected functions exist
+        run: |
+          set -euo pipefail
+          source lib/core.sh
+          source lib/installer.sh
+          source lib/ui.sh
+          for m in lib/modules/*.sh; do source "$m"; done
+          expected=(
+            nmap_run netcat_run tcpdump_run tshark_run hping3_run
+            arpscan_run masscan_run nikto_run dnsenum_run whatweb_run
+            ensure_command install_package detect_package_manager
+            log_step log_info log_warn log_error log_success
+            prompt_value prompt_choice prompt_yesno press_enter_to_continue
+            fys_outdir fys_timestamp fys_safe_name
+            generate_menu display_title_middle_screen display_banner_with_menu
+          )
+          missing=0
+          for fn in "${expected[@]}"; do
+            if ! declare -F "$fn" >/dev/null; then
+              echo "Missing function: $fn"
+              missing=1
+            fi
+          done
+          exit "$missing"
