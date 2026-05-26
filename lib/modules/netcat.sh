@@ -57,7 +57,8 @@ _netcat_connect() {
     [[ "$proto" == "udp" ]] && nc_args+=(-u)
     nc_args+=(-v -w 5 "$target" "$port")
 
-    local outbase="${outdir}/connect_${target}_${port}_$(fys_timestamp).log"
+    local outbase
+    outbase="${outdir}/connect_${target}_${port}_$(fys_timestamp).log"
     log_info "Saving session to ${outbase}"
     log_step "Running: ${nc_cmd} ${nc_args[*]}"
     "$nc_cmd" "${nc_args[@]}" |& tee "$outbase"
@@ -69,7 +70,8 @@ _netcat_listen() {
     port=$(prompt_value "Listen port")
     proto=$(prompt_value "Protocol [tcp/udp]" "tcp")
 
-    local outbase="${outdir}/listen_${port}_$(fys_timestamp).log"
+    local outbase
+    outbase="${outdir}/listen_${port}_$(fys_timestamp).log"
     log_info "Saving incoming data to ${outbase}"
 
     if [[ "$proto" == "udp" ]]; then

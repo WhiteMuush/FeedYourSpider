@@ -23,7 +23,8 @@ arpscan_run() {
 
     case "$choice" in
         1)
-            local outbase="${outdir}/localnet_$(fys_timestamp).txt"
+            local outbase
+            outbase="${outdir}/localnet_$(fys_timestamp).txt"
             log_step "Scanning local network, saving to ${outbase}"
             sudo arp-scan -l | tee "$outbase"
             ;;

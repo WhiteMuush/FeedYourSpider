@@ -7,7 +7,7 @@ fi
 FEEDYOURSPIDER_UI_LOADED=1
 
 # Multiline spider ASCII art. Quoted with 'ASCII' so $ and \ are literal.
-readonly FEEDYOURSPIDER_ASCII_ART=$(cat <<'ASCII'
+FEEDYOURSPIDER_ASCII_ART=$(cat <<'ASCII'
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡤⠤⠤⠀⠀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⡼⠟⠓⠒⠂⠀⢀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⠀⠀⠀⠀⠀⣐⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡤⠖⠋⠁⠀⠀⠀⠀⠀⢀⠔⠃⠀⠀
@@ -30,6 +30,7 @@ readonly FEEDYOURSPIDER_ASCII_ART=$(cat <<'ASCII'
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡌⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ASCII
 )
+readonly FEEDYOURSPIDER_ASCII_ART
 
 # Three-line FEED YOUR SPIDER header. Built once and reused by the title
 # screen and the side-by-side menu.
