@@ -47,6 +47,26 @@ prompt_value() {
     printf '%s' "$answer"
 }
 
+# Ask for a value and validate it with a predicate function. Re-prompts on
+# bad input. An empty answer aborts and returns 1 (caller should bail).
+# Usage: port=$(prompt_valid "Port" fys_is_port) || return 0
+prompt_valid() {
+    local prompt="$1" validator="$2" default="${3:-}"
+    local answer
+    while true; do
+        answer=$(prompt_value "$prompt" "$default")
+        if [[ -z "$answer" ]]; then
+            log_error "No value provided."
+            return 1
+        fi
+        if "$validator" "$answer"; then
+            printf '%s' "$answer"
+            return 0
+        fi
+        log_warn "Invalid value: ${answer}"
+    done
+}
+
 # Yes/no prompt. Returns 0 for yes, 1 for no. Default = yes if blank.
 # Usage: if prompt_yesno "Continue?"; then ... fi
 prompt_yesno() {

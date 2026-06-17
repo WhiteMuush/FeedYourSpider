@@ -66,3 +66,56 @@ fys_timestamp() {
 fys_safe_name() {
     printf '%s' "$1" | sed 's/[^A-Za-z0-9._-]/_/g'
 }
+
+# --- Input validation -------------------------------------------------------
+# Each helper returns 0 when the value is well-formed, 1 otherwise. They are
+# silent; callers decide how to report failure.
+
+# A single TCP/UDP port (1-65535).
+fys_is_port() {
+    local p="$1"
+    [[ "$p" =~ ^[0-9]+$ ]] && (( p >= 1 && p <= 65535 ))
+}
+
+# A port specification accepted by nmap/masscan: comma lists and ranges of
+# ports, e.g. "80", "1-1000", "22,80,443", "1-65535". Empty is rejected.
+fys_is_port_spec() {
+    local spec="$1"
+    [[ -n "$spec" ]] || return 1
+    [[ "$spec" =~ ^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$ ]]
+}
+
+# A dotted-quad IPv4 address with each octet in 0-255.
+fys_is_ipv4() {
+    local ip="$1" o
+    [[ "$ip" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]] || return 1
+    for o in "${BASH_REMATCH[@]:1}"; do
+        (( o <= 255 )) || return 1
+    done
+}
+
+# A hostname label set per RFC 1123 (letters, digits, hyphens, dots).
+fys_is_hostname() {
+    local h="$1"
+    (( ${#h} <= 253 )) || return 1
+    [[ "$h" =~ ^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$ ]]
+}
+
+# A target that is acceptable as a host: IPv4 or hostname.
+fys_is_host() {
+    fys_is_ipv4 "$1" || fys_is_hostname "$1"
+}
+
+# IPv4 CIDR notation, e.g. 192.168.1.0/24. Prefix must be 0-32.
+fys_is_cidr() {
+    local cidr="$1"
+    [[ "$cidr" == */* ]] || return 1
+    local addr="${cidr%/*}" prefix="${cidr#*/}"
+    [[ "$prefix" =~ ^[0-9]+$ ]] && (( prefix <= 32 )) || return 1
+    fys_is_ipv4 "$addr"
+}
+
+# A target accepted by scanners that take a host or a CIDR range.
+fys_is_host_or_cidr() {
+    fys_is_host "$1" || fys_is_cidr "$1"
+}
