@@ -30,9 +30,9 @@ readonly FEEDYOURSPIDER_TOOLS
 FEEDYOURSPIDER_OUTPUT_ROOT="${FEEDYOURSPIDER_OUTPUT_ROOT:-${HOME}}"
 
 # TTY-aware color setup. When stdout is not a terminal (pipe, redirect,
-# CI log), color sequences are emitted as empty strings so the output
-# stays clean.
-if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
+# CI log), or when NO_COLOR is set (https://no-color.org), color sequences
+# are emitted as empty strings so the output stays clean.
+if [[ -t 1 && -z "${NO_COLOR:-}" ]] && command -v tput >/dev/null 2>&1; then
     RESET="$(tput sgr0)"
     BOLD="$(tput bold)"
     DIM="$(tput dim)"
