@@ -6,7 +6,7 @@ if [[ -n "${FEEDYOURSPIDER_CORE_LOADED:-}" ]]; then
 fi
 FEEDYOURSPIDER_CORE_LOADED=1
 
-readonly FEEDYOURSPIDER_VERSION="1.1.0"
+readonly FEEDYOURSPIDER_VERSION="1.2.0"
 
 # Single source of truth for the tool menu. Order defines the menu numbers
 # (1-based). Each entry is "Label:function". Both the menu renderer
