@@ -19,7 +19,7 @@ menu choices to the corresponding module.
 
 ## Repository layout
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full layout and
+See [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) for the full layout and
 boot sequence. In short:
 
 ```
@@ -55,7 +55,7 @@ lib/modules/<tool>.sh   One file per tool. Exposes <tool>_run().
 ## Adding a new tool
 
 The recipe is documented step by step in
-[docs/ADDING_A_TOOL.md](docs/ADDING_A_TOOL.md). The short version:
+[docs/ADDING_A_TOOL.md](../docs/ADDING_A_TOOL.md). The short version:
 
 1. Create `lib/modules/<tool>.sh` exposing `<tool>_run()`.
 2. Source it in `feedyourspider.sh`.
