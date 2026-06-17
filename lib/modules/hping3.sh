@@ -23,20 +23,20 @@ hping3_run() {
     case "$choice" in
         1)
             local target port
-            target=$(prompt_value "Target")
-            port=$(prompt_value "Port")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
+            port=$(prompt_valid "Port" fys_is_port) || return 0
             log_step "Running TCP SYN scan on ${target}:${port}"
             sudo hping3 -S --dport "$port" "$target"
             ;;
         2)
             local target
-            target=$(prompt_value "Target")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
             log_step "Running UDP ping to ${target}"
             sudo hping3 --udp "$target"
             ;;
         3)
             local target
-            target=$(prompt_value "Target")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
             log_step "Running ICMP echo to ${target}"
             sudo hping3 -1 "$target"
             ;;

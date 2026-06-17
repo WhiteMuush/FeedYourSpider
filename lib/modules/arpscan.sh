@@ -30,7 +30,7 @@ arpscan_run() {
             ;;
         2)
             local range outbase
-            range=$(prompt_value "Network range (CIDR, e.g. 192.168.1.0/24)")
+            range=$(prompt_valid "Network range (CIDR, e.g. 192.168.1.0/24)" fys_is_cidr) || return 0
             outbase="${outdir}/scan_${range//\//_}_$(fys_timestamp).txt"
             log_step "Scanning ${range}, saving to ${outbase}"
             sudo arp-scan "$range" | tee "$outbase"

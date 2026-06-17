@@ -14,11 +14,7 @@ dnsenum_run() {
     log_step "Launching Dnsenum"
     local outdir outbase domain
     outdir=$(fys_outdir dnsenum)
-    domain=$(prompt_value "Domain")
-    if [[ -z "$domain" ]]; then
-        log_error "No domain provided."
-        return 0
-    fi
+    domain=$(prompt_valid "Domain" fys_is_hostname) || return 0
     outbase="${outdir}/enum_${domain}_$(fys_timestamp).txt"
 
     log_step "Enumerating DNS for ${domain}"
