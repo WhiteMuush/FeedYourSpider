@@ -60,6 +60,10 @@ dispatch_choice() {
 }
 
 main_loop() {
+    # Keep Ctrl+C scoped to the running tool: interrupting a scan returns to
+    # the menu instead of killing the launcher.
+    trap 'printf "\n"' INT
+
     display_title_middle_screen
     sleep 2
 
