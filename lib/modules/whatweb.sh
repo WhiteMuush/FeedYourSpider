@@ -44,18 +44,7 @@ whatweb_run() {
             log_step "Identifying ${url} with all plugins"
             whatweb -a 4 "$url" | tee "$outbase"
             ;;
-        4)
-            local custom_args
-            custom_args=$(prompt_value "Custom whatweb args")
-            if [[ -z "$custom_args" ]]; then
-                log_error "No custom args provided."
-                return 0
-            fi
-            local -a user_args
-            read -ra user_args <<<"$custom_args"
-            log_step "Running: whatweb ${user_args[*]}"
-            whatweb "${user_args[@]}"
-            ;;
+        4) run_custom_args whatweb "Custom whatweb args" ;;
         *) log_error "Invalid choice."; return 0 ;;
     esac
 }

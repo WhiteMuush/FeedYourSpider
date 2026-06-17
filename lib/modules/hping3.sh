@@ -40,18 +40,7 @@ hping3_run() {
             log_step "Running ICMP echo to ${target}"
             sudo hping3 -1 "$target"
             ;;
-        4)
-            local custom_args
-            custom_args=$(prompt_value "Custom hping3 args")
-            if [[ -z "$custom_args" ]]; then
-                log_error "No custom args provided."
-                return 0
-            fi
-            local -a user_args
-            read -ra user_args <<<"$custom_args"
-            log_step "Running: sudo hping3 ${user_args[*]}"
-            sudo hping3 "${user_args[@]}"
-            ;;
+        4) run_custom_args sudo hping3 "Custom hping3 args" ;;
         *) log_error "Invalid choice."; return 0 ;;
     esac
 }

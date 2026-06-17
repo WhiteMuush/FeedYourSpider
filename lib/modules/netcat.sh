@@ -142,14 +142,5 @@ _netcat_banner() {
 
 _netcat_custom() {
     local nc_cmd="$1"
-    local custom_args
-    custom_args=$(prompt_value "Custom nc args (e.g. -v -w 3 target port)")
-    if [[ -z "$custom_args" ]]; then
-        log_error "No custom args provided."
-        return 0
-    fi
-    local -a user_args
-    read -ra user_args <<<"$custom_args"
-    log_step "Running: ${nc_cmd} ${user_args[*]}"
-    "$nc_cmd" "${user_args[@]}"
+    run_custom_args "$nc_cmd" "Custom nc args (e.g. -v -w 3 target port)"
 }

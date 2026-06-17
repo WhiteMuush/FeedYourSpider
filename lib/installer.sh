@@ -95,6 +95,38 @@ prompt_choice() {
     printf '%s' "$answer"
 }
 
+# Prompt for free-form extra arguments, split them safely, and run a command
+# with them. Pass "sudo" as the first argument to elevate. Returns 1 (without
+# running anything) when no arguments are given.
+# Usage: run_custom_args nmap "Custom nmap args"
+#        run_custom_args sudo hping3 "Custom hping3 args"
+run_custom_args() {
+    local use_sudo=0
+    if [[ "$1" == "sudo" ]]; then
+        use_sudo=1
+        shift
+    fi
+    local cmd="$1"
+    local prompt="${2:-Custom ${cmd} args}"
+
+    local custom_args
+    custom_args=$(prompt_value "$prompt")
+    if [[ -z "$custom_args" ]]; then
+        log_error "No custom args provided."
+        return 1
+    fi
+    local -a user_args
+    read -ra user_args <<<"$custom_args"
+
+    if (( use_sudo )); then
+        log_step "Running: sudo ${cmd} ${user_args[*]}"
+        sudo "$cmd" "${user_args[@]}"
+    else
+        log_step "Running: ${cmd} ${user_args[*]}"
+        "$cmd" "${user_args[@]}"
+    fi
+}
+
 # --- Package manager dispatch ----------------------------------------------
 
 # Detect the system's package manager. Echoes one of:
