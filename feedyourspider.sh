@@ -4,6 +4,15 @@
 
 set -uo pipefail
 
+# Require Bash 4+. Features used throughout (mapfile, |&, associative
+# arrays) are unavailable in the Bash 3.2 that ships with stock macOS.
+if [[ -z "${BASH_VERSINFO:-}" ]] || (( BASH_VERSINFO[0] < 4 )); then
+    printf 'feedyourspider: Bash 4 or newer is required (found %s).\n' \
+        "${BASH_VERSION:-unknown}" >&2
+    printf 'On macOS: brew install bash, then run with the newer bash.\n' >&2
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/lib"
 MOD_DIR="${LIB_DIR}/modules"
