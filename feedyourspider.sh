@@ -46,25 +46,17 @@ source "${MOD_DIR}/dnsenum.sh"
 source "${MOD_DIR}/whatweb.sh"
 
 dispatch_choice() {
-    case "$1" in
-        1)  nmap_run     ;;
-        2)  netcat_run   ;;
-        3)  tcpdump_run  ;;
-        4)  tshark_run   ;;
-        5)  hping3_run   ;;
-        6)  arpscan_run  ;;
-        7)  masscan_run  ;;
-        8)  nikto_run    ;;
-        9)  dnsenum_run  ;;
-        10) whatweb_run  ;;
-        0)
-            log_step "Exiting..."
-            exit 0
-            ;;
-        *)
-            log_error "Invalid choice. Please try again."
-            ;;
-    esac
+    local choice="$1"
+    if [[ "$choice" == "0" ]]; then
+        log_step "Exiting..."
+        exit 0
+    fi
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEEDYOURSPIDER_TOOLS[@]} )); then
+        local entry="${FEEDYOURSPIDER_TOOLS[choice-1]}"
+        "${entry#*:}"
+        return
+    fi
+    log_error "Invalid choice. Please try again."
 }
 
 main_loop() {

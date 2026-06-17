@@ -8,6 +8,24 @@ FEEDYOURSPIDER_CORE_LOADED=1
 
 readonly FEEDYOURSPIDER_VERSION="1.1.0"
 
+# Single source of truth for the tool menu. Order defines the menu numbers
+# (1-based). Each entry is "Label:function". Both the menu renderer
+# (lib/ui.sh) and the dispatcher (feedyourspider.sh) derive from this, so
+# adding a tool means editing this list only.
+FEEDYOURSPIDER_TOOLS=(
+    "Nmap:nmap_run"
+    "Netcat:netcat_run"
+    "Tcpdump:tcpdump_run"
+    "Wireshark (tshark):tshark_run"
+    "Hping3:hping3_run"
+    "Arp-scan:arpscan_run"
+    "Masscan:masscan_run"
+    "Nikto:nikto_run"
+    "Dnsenum:dnsenum_run"
+    "Whatweb:whatweb_run"
+)
+readonly FEEDYOURSPIDER_TOOLS
+
 # Output base directory for per-tool result folders.
 FEEDYOURSPIDER_OUTPUT_ROOT="${FEEDYOURSPIDER_OUTPUT_ROOT:-${HOME}}"
 
