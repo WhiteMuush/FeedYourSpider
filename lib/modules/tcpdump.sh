@@ -32,12 +32,12 @@ tcpdump_run() {
             ;;
         2)
             local port
-            port=$(prompt_value "Port")
+            port=$(prompt_valid "Port" fys_is_port) || return 0
             tcpdump_args=(-i any "port $port" -w "${outbase}.pcap")
             ;;
         3)
             local host
-            host=$(prompt_value "Host IP")
+            host=$(prompt_valid "Host IP" fys_is_host) || return 0
             tcpdump_args=(-i any "host $host" -w "${outbase}.pcap")
             ;;
         4)

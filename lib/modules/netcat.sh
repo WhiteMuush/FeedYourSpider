@@ -49,8 +49,8 @@ netcat_run() {
 _netcat_connect() {
     local nc_cmd="$1" outdir="$2"
     local target port proto
-    target=$(prompt_value "Target (ip/host)")
-    port=$(prompt_value "Port")
+    target=$(prompt_valid "Target (ip/host)" fys_is_host) || return 0
+    port=$(prompt_valid "Port" fys_is_port) || return 0
     proto=$(prompt_value "Protocol [tcp/udp]" "tcp")
 
     local -a nc_args
@@ -67,7 +67,7 @@ _netcat_connect() {
 _netcat_listen() {
     local nc_cmd="$1" outdir="$2"
     local port proto
-    port=$(prompt_value "Listen port")
+    port=$(prompt_valid "Listen port" fys_is_port) || return 0
     proto=$(prompt_value "Protocol [tcp/udp]" "tcp")
 
     local outbase
@@ -97,8 +97,8 @@ _netcat_transfer() {
     case "$choice" in
         1)
             local target port filepath outbase
-            target=$(prompt_value "Target (ip/host)")
-            port=$(prompt_value "Port")
+            target=$(prompt_valid "Target (ip/host)" fys_is_host) || return 0
+            port=$(prompt_valid "Port" fys_is_port) || return 0
             filepath=$(prompt_value "Path to file to send")
             if [[ ! -f "$filepath" ]]; then
                 log_error "File not found: ${filepath}"
@@ -110,7 +110,7 @@ _netcat_transfer() {
             ;;
         2)
             local port outname outpath
-            port=$(prompt_value "Listen port")
+            port=$(prompt_valid "Listen port" fys_is_port) || return 0
             outname=$(prompt_value "Output filename (optional)")
             outpath="${outdir}/${outname:-received_$(fys_timestamp)}"
             log_step "Listening on port ${port}, saving to ${outpath}"
@@ -128,8 +128,8 @@ _netcat_transfer() {
 _netcat_banner() {
     local nc_cmd="$1"
     local target port proto
-    target=$(prompt_value "Target (ip/host)")
-    port=$(prompt_value "Port")
+    target=$(prompt_valid "Target (ip/host)" fys_is_host) || return 0
+    port=$(prompt_valid "Port" fys_is_port) || return 0
     proto=$(prompt_value "Protocol [tcp/udp]" "tcp")
     log_step "Banner grab ${target}:${port} (${proto})"
     if [[ "$proto" == "udp" ]]; then
@@ -142,14 +142,5 @@ _netcat_banner() {
 
 _netcat_custom() {
     local nc_cmd="$1"
-    local custom_args
-    custom_args=$(prompt_value "Custom nc args (e.g. -v -w 3 target port)")
-    if [[ -z "$custom_args" ]]; then
-        log_error "No custom args provided."
-        return 0
-    fi
-    local -a user_args
-    read -ra user_args <<<"$custom_args"
-    log_step "Running: ${nc_cmd} ${user_args[*]}"
-    "$nc_cmd" "${user_args[@]}"
+    run_custom_args "$nc_cmd" "Custom nc args (e.g. -v -w 3 target port)"
 }

@@ -30,23 +30,12 @@ arpscan_run() {
             ;;
         2)
             local range outbase
-            range=$(prompt_value "Network range (CIDR, e.g. 192.168.1.0/24)")
+            range=$(prompt_valid "Network range (CIDR, e.g. 192.168.1.0/24)" fys_is_cidr) || return 0
             outbase="${outdir}/scan_${range//\//_}_$(fys_timestamp).txt"
             log_step "Scanning ${range}, saving to ${outbase}"
             sudo arp-scan "$range" | tee "$outbase"
             ;;
-        3)
-            local custom_args
-            custom_args=$(prompt_value "Custom arp-scan args")
-            if [[ -z "$custom_args" ]]; then
-                log_error "No custom args provided."
-                return 0
-            fi
-            local -a user_args
-            read -ra user_args <<<"$custom_args"
-            log_step "Running: sudo arp-scan ${user_args[*]}"
-            sudo arp-scan "${user_args[@]}"
-            ;;
+        3) run_custom_args sudo arp-scan "Custom arp-scan args" ;;
         *) log_error "Invalid choice."; return 0 ;;
     esac
 }

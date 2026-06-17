@@ -16,8 +16,8 @@ masscan_run() {
     outdir=$(fys_outdir masscan)
 
     local target ports outbase
-    target=$(prompt_value "Target (IP or CIDR)")
-    ports=$(prompt_value "Ports (e.g. 80,443,1-1000)")
+    target=$(prompt_valid "Target (IP or CIDR)" fys_is_host_or_cidr) || return 0
+    ports=$(prompt_valid "Ports (e.g. 80,443,1-1000)" fys_is_port_spec) || return 0
     outbase="${outdir}/masscan_${target//\//_}_$(fys_timestamp)"
 
     log_step "Running masscan on ${target} for ports ${ports}"

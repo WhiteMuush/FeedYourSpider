@@ -31,24 +31,13 @@ nikto_run() {
             ;;
         2)
             local host port outbase
-            host=$(prompt_value "Host")
-            port=$(prompt_value "Port" "80")
+            host=$(prompt_valid "Host" fys_is_host) || return 0
+            port=$(prompt_valid "Port" fys_is_port "80") || return 0
             outbase="${outdir}/scan_${host}_${port}_$(fys_timestamp).txt"
             log_step "Scanning ${host}:${port}, saving to ${outbase}"
             nikto -h "$host" -p "$port" -o "$outbase"
             ;;
-        3)
-            local custom_args
-            custom_args=$(prompt_value "Custom nikto args")
-            if [[ -z "$custom_args" ]]; then
-                log_error "No custom args provided."
-                return 0
-            fi
-            local -a user_args
-            read -ra user_args <<<"$custom_args"
-            log_step "Running: nikto ${user_args[*]}"
-            nikto "${user_args[@]}"
-            ;;
+        3) run_custom_args nikto "Custom nikto args" ;;
         *) log_error "Invalid choice."; return 0 ;;
     esac
 }

@@ -54,6 +54,18 @@ generate_menu() {
     local -a header_lines
     mapfile -t header_lines < <(_fys_header_lines)
 
+    # Tool entries, derived from the single registry in lib/core.sh.
+    local -a tool_lines=()
+    local i num label pad
+    for ((i = 0; i < ${#FEEDYOURSPIDER_TOOLS[@]}; i++)); do
+        num=$((i + 1))
+        label="${FEEDYOURSPIDER_TOOLS[i]%%:*}"
+        # Pad the "[n]" token to a fixed width so labels align whether the
+        # number is one or two digits.
+        printf -v pad '%-4s' "[${num}]"
+        tool_lines+=("${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}${pad}${RESET} ${label}")
+    done
+
     local -a menu_lines=(
         ""
         "${header_lines[0]}"
@@ -68,16 +80,7 @@ generate_menu() {
         "${BOLD}${BRIGHT_MAGENTA}${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${DIM}Spider is hungry... Feed it with network data!${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}#${RESET}"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[1]${RESET}  Nmap"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[2]${RESET}  Netcat"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[3]${RESET}  Tcpdump"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[4]${RESET}  Wireshark (tshark)"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[5]${RESET}  Hping3"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[6]${RESET}  Arp-scan"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[7]${RESET}  Masscan"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[8]${RESET}  Nikto"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[9]${RESET}  Dnsenum"
-        "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[10]${RESET} Whatweb"
+        "${tool_lines[@]}"
         "${BOLD}${BRIGHT_MAGENTA}#${RESET}"
         "${BOLD}${BRIGHT_MAGENTA}#${RESET}    ${BRIGHT_RED}[0]${RESET}  Exit"
         "${BOLD}${BRIGHT_MAGENTA}#${RESET}"

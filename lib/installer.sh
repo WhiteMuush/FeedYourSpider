@@ -47,6 +47,26 @@ prompt_value() {
     printf '%s' "$answer"
 }
 
+# Ask for a value and validate it with a predicate function. Re-prompts on
+# bad input. An empty answer aborts and returns 1 (caller should bail).
+# Usage: port=$(prompt_valid "Port" fys_is_port) || return 0
+prompt_valid() {
+    local prompt="$1" validator="$2" default="${3:-}"
+    local answer
+    while true; do
+        answer=$(prompt_value "$prompt" "$default")
+        if [[ -z "$answer" ]]; then
+            log_error "No value provided."
+            return 1
+        fi
+        if "$validator" "$answer"; then
+            printf '%s' "$answer"
+            return 0
+        fi
+        log_warn "Invalid value: ${answer}"
+    done
+}
+
 # Yes/no prompt. Returns 0 for yes, 1 for no. Default = yes if blank.
 # Usage: if prompt_yesno "Continue?"; then ... fi
 prompt_yesno() {
@@ -73,6 +93,38 @@ prompt_choice() {
     local answer
     read -rp $'Choice > ' answer
     printf '%s' "$answer"
+}
+
+# Prompt for free-form extra arguments, split them safely, and run a command
+# with them. Pass "sudo" as the first argument to elevate. Returns 1 (without
+# running anything) when no arguments are given.
+# Usage: run_custom_args nmap "Custom nmap args"
+#        run_custom_args sudo hping3 "Custom hping3 args"
+run_custom_args() {
+    local use_sudo=0
+    if [[ "$1" == "sudo" ]]; then
+        use_sudo=1
+        shift
+    fi
+    local cmd="$1"
+    local prompt="${2:-Custom ${cmd} args}"
+
+    local custom_args
+    custom_args=$(prompt_value "$prompt")
+    if [[ -z "$custom_args" ]]; then
+        log_error "No custom args provided."
+        return 1
+    fi
+    local -a user_args
+    read -ra user_args <<<"$custom_args"
+
+    if (( use_sudo )); then
+        log_step "Running: sudo ${cmd} ${user_args[*]}"
+        sudo "$cmd" "${user_args[@]}"
+    else
+        log_step "Running: ${cmd} ${user_args[*]}"
+        "$cmd" "${user_args[@]}"
+    fi
 }
 
 # --- Package manager dispatch ----------------------------------------------

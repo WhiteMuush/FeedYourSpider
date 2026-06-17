@@ -23,35 +23,24 @@ hping3_run() {
     case "$choice" in
         1)
             local target port
-            target=$(prompt_value "Target")
-            port=$(prompt_value "Port")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
+            port=$(prompt_valid "Port" fys_is_port) || return 0
             log_step "Running TCP SYN scan on ${target}:${port}"
             sudo hping3 -S --dport "$port" "$target"
             ;;
         2)
             local target
-            target=$(prompt_value "Target")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
             log_step "Running UDP ping to ${target}"
             sudo hping3 --udp "$target"
             ;;
         3)
             local target
-            target=$(prompt_value "Target")
+            target=$(prompt_valid "Target" fys_is_host) || return 0
             log_step "Running ICMP echo to ${target}"
             sudo hping3 -1 "$target"
             ;;
-        4)
-            local custom_args
-            custom_args=$(prompt_value "Custom hping3 args")
-            if [[ -z "$custom_args" ]]; then
-                log_error "No custom args provided."
-                return 0
-            fi
-            local -a user_args
-            read -ra user_args <<<"$custom_args"
-            log_step "Running: sudo hping3 ${user_args[*]}"
-            sudo hping3 "${user_args[@]}"
-            ;;
+        4) run_custom_args sudo hping3 "Custom hping3 args" ;;
         *) log_error "Invalid choice."; return 0 ;;
     esac
 }

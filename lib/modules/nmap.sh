@@ -11,11 +11,7 @@ nmap_run() {
 
     log_step "Launching Nmap"
     local target
-    target=$(prompt_value "Target (ip/host or CIDR)")
-    if [[ -z "$target" ]]; then
-        log_error "No target provided."
-        return 0
-    fi
+    target=$(prompt_valid "Target (ip/host or CIDR)" fys_is_host_or_cidr) || return 0
 
     local outdir outbase safe_target
     outdir=$(fys_outdir nmap)
