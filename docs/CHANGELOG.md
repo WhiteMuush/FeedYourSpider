@@ -23,8 +23,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - `ludeeus/action-shellcheck` is pinned to `2.0.0` in CI instead of `master`.
-- Community health files (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
-  `SECURITY.md`) moved into `.github/` to keep the repository root clean.
+- All documentation consolidated under `docs/` (`CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `SECURITY.md`, `CHANGELOG.md`) to keep the repository
+  root clean. Only `README.md` and `LICENSE` remain at the root.
 
 ## [1.1.0]
 

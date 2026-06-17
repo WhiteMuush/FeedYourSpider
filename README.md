@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![CI](https://github.com/WhiteMuush/FeedYourSpider/actions/workflows/ci.yml/badge.svg)](https://github.com/WhiteMuush/FeedYourSpider/actions/workflows/ci.yml)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](.github/CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 
 Interactive terminal launcher for common network and reconnaissance tools
 (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto, dnsenum,
@@ -56,8 +56,11 @@ lib/
 docs/
   ARCHITECTURE.md        Boot sequence and cross-cutting helpers.
   ADDING_A_TOOL.md       Recipe for contributing a new tool.
-.github/                 CI workflow, issue/PR templates, CONTRIBUTING,
-                         CODE_OF_CONDUCT, SECURITY.
+  CONTRIBUTING.md        Conventions and contribution checklist.
+  CODE_OF_CONDUCT.md     Community standards.
+  SECURITY.md            Vulnerability reporting policy.
+  CHANGELOG.md           Release history.
+.github/                 CI workflow, issue/PR templates.
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full layout.
@@ -92,7 +95,7 @@ https://github.com/user-attachments/assets/b99f1de3-5ecd-4964-b53c-7a4999e15855
 ## Contributing
 
 PRs and issues are welcome. Start with
-[CONTRIBUTING.md](.github/CONTRIBUTING.md) — it covers conventions,
+[CONTRIBUTING.md](docs/CONTRIBUTING.md) — it covers conventions,
 the contribution checklist, and the validation commands the CI runs.
 
 Adding a new tool? See [docs/ADDING_A_TOOL.md](docs/ADDING_A_TOOL.md);
