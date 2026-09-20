@@ -95,7 +95,7 @@ https://github.com/user-attachments/assets/b99f1de3-5ecd-4964-b53c-7a4999e15855
 ## Contributing
 
 PRs and issues are welcome. Start with
-[CONTRIBUTING.md](docs/CONTRIBUTING.md) — it covers conventions,
+[CONTRIBUTING.md](docs/CONTRIBUTING.md), it covers conventions,
 the contribution checklist, and the validation commands the CI runs.
 
 Adding a new tool? See [docs/ADDING_A_TOOL.md](docs/ADDING_A_TOOL.md);

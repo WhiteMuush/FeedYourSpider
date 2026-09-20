@@ -9,7 +9,7 @@ are everything you need. As an example we add `gobuster`.
 
 ```bash
 #!/usr/bin/env bash
-# lib/modules/gobuster.sh — Gobuster module.
+# lib/modules/gobuster.sh: Gobuster module.
 
 if [[ -n "${FEEDYOURSPIDER_MOD_GOBUSTER_LOADED:-}" ]]; then
     return 0

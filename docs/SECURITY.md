@@ -5,7 +5,7 @@
 FeedYourSpider is a thin wrapper around third-party network and recon
 tools (nmap, netcat, tcpdump, tshark, hping3, arp-scan, masscan, nikto,
 dnsenum, whatweb). This policy covers vulnerabilities in **the
-wrapper itself** — for example:
+wrapper itself**, for example:
 
 - Command injection through unsanitized prompts.
 - Path traversal in output-file handling.
@@ -13,7 +13,7 @@ wrapper itself** — for example:
   `sudo` invocations on untrusted input).
 - Tampered automatic-installation flows.
 
-Vulnerabilities in the **wrapped tools themselves** are out of scope —
+Vulnerabilities in the **wrapped tools themselves** are out of scope,
 please report those directly to their upstream maintainers.
 
 ## Reporting a vulnerability
