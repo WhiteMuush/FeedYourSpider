@@ -34,7 +34,7 @@ lib/modules/<tool>.sh   One file per tool. Exposes <tool>_run().
 
 - Shebang: `#!/usr/bin/env bash`.
 - Strict-ish mode: `set -uo pipefail` at the entry point only. Modules
-  must not enable `set -e` — the interactive menu loop relies on
+  must not enable `set -e`, the interactive menu loop relies on
   non-zero exits to gracefully return to the prompt.
 - Quote every variable: `"${var}"`, `"${arr[@]}"`.
 - Functions are `snake_case` and prefixed by the module (e.g.
